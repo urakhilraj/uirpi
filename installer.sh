@@ -76,11 +76,25 @@ if ! command -v git >/dev/null; then
     fi
 fi
 
-_process "Installing Apache2 and PHP..."
+_process "Installing Apache2..."
 sudo apt-get update
-sudo apt-get install -y apache2 php libapache2-mod-php
+sudo apt-get install -y apache2
 if [ $? -ne 0 ]; then
-    echo "${RED}Failed to install Apache2 and PHP. Please check your internet connection and try again.${RESET}"
+    echo "${RED}Failed to install Apache2. Please check your internet connection and try again.${RESET}"
+    exit 1
+fi
+
+_process "Installing PHP 8.1 and required tools..."
+sudo apt-get install -y lsb-release
+curl https://packages.sury.org/php/apt.gpg | sudo tee /usr/share/keyrings/suryphp-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/suryphp-archive-keyring.gpg] https://packages.sury.org/php/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/sury-php.list
+sudo apt-get update
+sudo apt-get install -y software-properties-common
+sudo apt-add-repository ppa:ondrej/php -y
+sudo apt-get update
+sudo apt-get install -y php8.1-cli php8.1-fpm
+if [ $? -ne 0 ]; then
+    echo "${RED}Failed to install PHP 8.1. Please check your internet connection and try again.${RESET}"
     exit 1
 fi
 
@@ -99,7 +113,7 @@ if [ $? -ne 0 ]; then
 fi
 
 _process "Cloning RPi Dashboard to /var/www/html/..."
-git clone https://github.com/urakhilraj/uirpi.git /var/www/html/
+git clone https://github.com/urakhilraj/uirpi /var/www/html/
 if [ $? -ne 0 ]; then
     echo "${RED}Failed to clone the repository!${RESET}"
     echo "${YELLOW}Please check your internet connection and GitHub availability.${RESET}"
