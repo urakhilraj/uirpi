@@ -76,7 +76,7 @@ if ($auth) {
     $permissionerr = false;
     $spannung = substr(exec("vcgencmd measure_volts core"), 5);
     if ((strpos($spannung, "failed") !== false) || (strlen($spannung) < 2)) {
-        $spannung = $spannung . "<div class='alert alert-danger' role='alert'>Reading of core voltage failed. Please run<br><kbd>sudo usermod -aG video www-data</kbd><br>in a terminal to solve this problem.&nbsp;<a href='' target='blank'><i class='bi bi-question-circle'></i>&nbsp;Help</a></div>";
+        $spannung = $spannung . "<div class='alert alert-danger' role='alert'>Reading of core voltage failed. Please run<br><kbd>sudo usermod -aG video www-data</kbd><br>in a terminal to solve this problem. <a href='' target='blank'><i class='bi bi-question-circle'></i> Help</a></div>";
         $permissionerr = true;
     }
 }
@@ -90,7 +90,7 @@ if ($auth) {
 
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
     <symbol id="check2" viewBox="0 0 16 16">
-        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"></path>
+        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 0 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"></path>
     </symbol>
     <symbol id="circle-half" viewBox="0 0 16 16">
         <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"></path>
@@ -145,13 +145,13 @@ if ($auth) {
         </div>
 
         <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> &#183; <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
-                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> &#183; <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
+            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> · <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
+                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> · <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
         </ul>
 
         <div class="col-md-3 text-end">
-            <button class="btn btn-outline-secondary mb-2" style="margin-bottom: 1px!important;" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i>&nbsp;Options</button>
-            <button class="btn btn-outline-primary mb-2" style="margin-bottom: 1px!important;" onclick="$('#wifiModal').modal('show');"><i class="bi bi-wifi"></i>&nbsp;WiFi</button>
+            <button class="btn btn-outline-secondary mb-2" style="margin-bottom: 1px!important;" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i> Options</button>
+            <button class="btn btn-outline-primary mb-2" style="margin-bottom: 1px!important;" onclick="$('#wifiModal').modal('show');"><i class="bi bi-wifi"></i> WiFi</button>
         </div>
     </header>
 </div>
@@ -160,14 +160,14 @@ if ($auth) {
     <div class="row<?php if (!$auth) { echo " hidden"; } ?>">
         <div class="col-sm-8 pt-1 pt-md-0">
             <div class="card shadow-sm">
-                <div class="card-header border-primary text-primary"><i class="bi bi-info-circle"></i>&nbsp;Overview</div>
+                <div class="card-header border-primary text-primary"><i class="bi bi-info-circle"></i> Overview</div>
                 <div class="card-body">
                     <h5 id="sys1" class="card-title"><span id="overallstate"></span></h5>
                     <p id="sys11" class="card-text"></p>
                     <?php
                     if (isset($_SESSION["setup"])) {
                     ?>
-                    <div class="alert alert-info alert-dismissible fade show" role="alert"><i class="bi bi-info-circle"></i>&nbsp;Setup finished! Acubotz Dashboard is ready.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                    <div class="alert alert-info alert-dismissible fade show" role="alert"><i class="bi bi-info-circle"></i> Setup finished! Acubotz Dashboard is ready.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
                     <?php
                         unset($_SESSION["setup"]);
                     }
@@ -175,7 +175,7 @@ if ($auth) {
 
                     <p id="sys2" class="card-text"></p>
                     <hr>
-                    <p><i class="bi bi-clock-history"></i>&nbsp;Uptime: <b><span id="uptime"></span></b><?php if ($auth) { ?>&nbsp;(started <?= $uptstr; ?>)<?php } ?></p>
+                    <p><i class="bi bi-clock-history"></i> Uptime: <b><span id="uptime"></span></b><?php if ($auth) { ?> (started <?= $uptstr; ?>)<?php } ?></p>
                     <table style="width:100%"><tbody><tr><td style="width:10%"><button type="button" id="pctl" onclick="y=100; this.innerHTML=togglep(true);" class="btn btn-secondary btn-sm"><i class="bi bi-pause"></i></button></td><td style="width:90%">
                             <div class="progress" style="margin-top: 1px; height: 2px;"><div class="progress-bar py" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div></td></tr></tbody></table>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
@@ -184,10 +184,10 @@ if ($auth) {
         </div>
         <div class="col-sm-4 pt-1 pt-md-0">
             <div class="card shadow-sm">
-                <div class="card-header border-primary text-primary"><i class="bi bi-command"></i>&nbsp;System</div>
+                <div class="card-header border-primary text-primary"><i class="bi bi-command"></i> System</div>
                 <div class="card-body">
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModalCenter" class="btn btn-outline-primary mt-1"><i class="bi bi-power"></i>&nbsp;Power</button>&nbsp;
-                    <button type="button" onclick="logout()" class="btn btn-outline-warning mt-1"><i class="bi bi-arrow-right-square"></i>&nbsp;Logout</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModalCenter" class="btn btn-outline-primary mt-1"><i class="bi bi-power"></i> Power</button>
+                    <button type="button" onclick="logout()" class="btn btn-outline-warning mt-1"><i class="bi bi-arrow-right-square"></i> Logout</button>
                 </div>
             </div>
         </div>
@@ -196,8 +196,8 @@ if ($auth) {
         <div class="col-12 col-sm-6 col-md-5 pt-1 pt-md-0">
             <div class="card text-center shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-cpu"></i>&nbsp;<span id="cput"></span></h5>
-                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> &#183; 5 min: <b><span id="m5"></span></b> &#183; 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
+                    <h5 class="card-title"><i class="bi bi-cpu"></i> <span id="cput"></span></h5>
+                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> · 5 min: <b><span id="m5"></span></b> · 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
             </div>
@@ -215,12 +215,12 @@ if ($auth) {
         <div class="col-12 col-sm-6 col-md-4 pt-1 pt-md-0">
             <div class="card text-center shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-hdd-network"></i>&nbsp;<span id="ramt"></span></h5>
+                    <h5 class="card-title"><i class="bi bi-hdd-network"></i> <span id="ramt"></span></h5>
                     <div class="progress">
                         <div class="progress-bar bg-success" id="ram1" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                         <div class="progress-bar bg-danger" id="ram2" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> &#183; Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
+                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> · Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
                     <p class="card-text"><span id="swapsys"></span></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
@@ -235,7 +235,7 @@ if ($auth) {
         <div class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-hdd-rack"></i>&nbsp;Hardware</h5>
+                    <h5 class="card-title"><i class="bi bi-hdd-rack"></i> Hardware</h5>
                     <?php print "<pre>"; echo shell_exec("lsusb"); print "</pre>"; ?>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
@@ -244,7 +244,7 @@ if ($auth) {
         <div class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-globe"></i>&nbsp;Web Server</h5>
+                    <h5 class="card-title"><i class="bi bi-globe"></i> Web Server</h5>
                     <p class="card-text" id="webinfo">Software: <b><?php echo $_SERVER["SERVER_SOFTWARE"]; ?></b><br>Address: <b><?php echo $_SERVER["SERVER_ADDR"]; ?></b><br>PHP version: <b><?php echo phpversion(); ?></b><br>User: <b><?php system("whoami"); ?></b><br>Protocol: <b><?php echo $_SERVER["SERVER_PROTOCOL"]; ?></b></p>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
@@ -255,8 +255,8 @@ if ($auth) {
         <div class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-hdd"></i>&nbsp;Disk Space</h5>
-                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> &#183; Free: <b><?php echo $df_rund; ?> GB</b> &#183; Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
+                    <h5 class="card-title"><i class="bi bi-hdd"></i> Disk Space</h5>
+                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> · Free: <b><?php echo $df_rund; ?> GB</b> · Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
             </div>
@@ -264,7 +264,7 @@ if ($auth) {
         <div class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-lightning"></i>&nbsp;Voltage</h5>
+                    <h5 class="card-title"><i class="bi bi-lightning"></i> Voltage</h5>
                     <p style="font-size: 20px" class="card-text text-muted"><?php echo $spannung; ?></p>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
@@ -289,7 +289,7 @@ if ($auth) {
                     <?php
                     $ot = shell_exec("vcgencmd version");
                     if ($permissionerr) {
-                        echo "<div class='alert alert-danger' role='alert'>Execution of system command failed. Please run<br><kbd>sudo usermod -aG video www-data</kbd><br>in a terminal to solve this problem.&nbsp;<a href='' target='blank'><i class='bi bi-question-circle'></i>&nbsp;Help</a></div>";
+                        echo "<div class='alert alert-danger' role='alert'>Execution of system command failed. Please run<br><kbd>sudo usermod -aG video www-data</kbd><br>in a terminal to solve this problem. <a href='' target='blank'><i class='bi bi-question-circle'></i> Help</a></div>";
                     } else {
                         echo '<samp>' . $ot . '</samp>';
                     }
@@ -320,7 +320,7 @@ if ($auth) {
         </div>
     </div>
     <div class="row pt-3">
-        <div class="col-sm-6 pt-1 pt-md-0">
+        <div符合要求 class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-header">Hostnamectl</div>
                 <div class="card-body">
@@ -355,7 +355,7 @@ if ($auth) {
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle"><i class="bi bi-power"></i>&nbsp;Shutdown / Reboot device</h5>
+                <h5 class="modal-title" id="exampleModalLongTitle"><i class="bi bi-power"></i> Shutdown / Reboot device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -402,8 +402,8 @@ if ($auth) {
                             <div class="invalid-feedback">Invalid password!</div>
                         </div>
                     </div>
-                    <div id="pwrCheck" class='alert alert-info' role='alert'><i class='bi bi-chevron-double-right'></i>&nbsp;Checking authorization ...</div>
-                    <div id="pwrCheck2" class="hidden alert alert-success" role="alert"><i class="bi bi-check2-circle"></i>&nbsp;Authenticated</div>
+                    <div id="pwrCheck" class='alert alert-info' role='alert'><i class='bi bi-chevron-double-right'></i> Checking authorization ...</div>
+                    <div id="pwrCheck2" class="hidden alert alert-success" role="alert"><i class="bi bi-check2-circle"></i> Authenticated</div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -441,13 +441,18 @@ if ($auth) {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="wifiModalLabel"><i class="bi bi-wifi"></i>&nbsp;WiFi Manager</h5>
+                <h5 class="modal-title" id="wifiModalLabel"><i class="bi bi-wifi"></i> WiFi Manager</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="wifiStatus" class="alert alert-info">Current Status: <span id="currentSsid">Checking...</span></div>
+                <div id="wifiStatus" class="alert alert-info">
+                    Current Status: <span id="currentSsid">Checking...</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="loadWifiStatus()">Refresh</button>
+                </div>
                 <h6>Available Networks</h6>
-                <ul id="wifiNetworks" class="list-group mb-3"></ul>
+                <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                    <ul id="wifiNetworks" class="list-group mb-3"></ul>
+                </div>
                 <form id="wifiForm">
                     <div class="mb-3">
                         <label for="wifiSsid" class="form-label">SSID</label>
@@ -455,12 +460,21 @@ if ($auth) {
                     </div>
                     <div class="mb-3">
                         <label for="wifiPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="wifiPassword" placeholder="Enter WiFi password">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="wifiPassword" placeholder="Enter WiFi password">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="connectWifi()">Connect</button>
+                    <div id="wifiProgress" class="progress mt-2" style="display: none;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%;"></div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="connectWifiBtn" onclick="connectWifi()">Connect</button>
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="scanWifiNetworks()">Rescan Networks</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -472,7 +486,7 @@ if ($auth) {
     <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-gear"></i>&nbsp;Options & About</h5>
+                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-gear"></i> Options & About</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -544,7 +558,7 @@ if ($auth) {
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-                                <h3><span class='text-success'>&#10003;</span> Version 1.1.5</h3>
+                                <h3><span class='text-success'>✓</span> Version 1.1.5</h3>
                                 <ul><li>live page title with hostname + status of monitored device</li><li>overhauled project documentation / readme</li><li><a href=''>Stay updated here</a></li><li><i><a href="CHANGELOG.md">All changes</a></i></li></ul>
                                 <small>most important changes since device Dashboard v1.0</small>
                             </div>
@@ -590,7 +604,7 @@ if ($auth) {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel"><i class="bi bi-shield-lock"></i>&nbsp;Authentication</h5>
+                <h5 class="modal-title" id="staticBackdropLabel"><i class="bi bi-shield-lock"></i> Authentication</h5>
             </div>
             <div class="modal-body">
                 <div class='alert alert-info' role='alert'>Please enter password to access dashboard!</div>
@@ -612,8 +626,8 @@ if ($auth) {
 <!-- Footer -->
 <footer style="line-height: 40px; margin-top: 10px;" class="border-top py-1">
     <div class="container text-center">
-        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">&middot;</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
-        <button class="btn btn-secondary mb-2" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i>&nbsp;Options</button>
+        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">·</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
+        <button class="btn btn-secondary mb-2" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i> Options</button>
         <hr style="margin-top: 0; margin-bottom: 0;">
     </div>
 </footer>
@@ -720,29 +734,38 @@ var chart2 = new Chart(ctx2, {
 
 <script>
 function loadWifiStatus() {
+    document.getElementById('currentSsid').textContent = 'Checking...';
+    document.getElementById('wifiStatus').className = 'alert alert-info';
     fetch('wifi_manager.php?action=status')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('currentSsid').textContent = data.ssid;
+            document.getElementById('currentSsid').textContent = data.ssid || 'Not connected';
+            document.getElementById('wifiStatus').className = 'alert alert-' + (data.ssid ? 'success' : 'warning');
         })
         .catch(error => {
             document.getElementById('wifiStatus').className = 'alert alert-danger';
-            document.getElementById('wifiStatus').textContent = 'Error fetching WiFi status';
+            document.getElementById('currentSsid').textContent = 'Error fetching status';
+            console.error('Error fetching WiFi status:', error);
         });
 }
 
 function scanWifiNetworks() {
+    const networkList = document.getElementById('wifiNetworks');
+    networkList.innerHTML = '<li class="list-group-item">Scanning...</li>';
     fetch('wifi_manager.php?action=scan')
         .then(response => response.json())
         .then(data => {
-            const networkList = document.getElementById('wifiNetworks');
             networkList.innerHTML = '';
             if (data.networks && data.networks.length > 0) {
                 data.networks.forEach(network => {
                     const li = document.createElement('li');
                     li.className = 'list-group-item list-group-item-action';
-                    li.textContent = network;
-                    li.onclick = () => selectNetwork(network);
+                    const signalIcon = network.signal > -50 ? '<i class="bi bi-reception-4"></i>' :
+                                       network.signal > -70 ? '<i class="bi bi-reception-3"></i>' :
+                                       network.signal > -90 ? '<i class="bi bi-reception-2"></i>' :
+                                       '<i class="bi bi-reception-1"></i>';
+                    li.innerHTML = `${network.ssid} (${network.signal} dBm) ${signalIcon}`;
+                    li.onclick = () => selectNetwork(network.ssid);
                     networkList.appendChild(li);
                 });
             } else {
@@ -750,22 +773,38 @@ function scanWifiNetworks() {
             }
         })
         .catch(error => {
-            document.getElementById('wifiNetworks').innerHTML = '<li class="list-group-item text-danger">Error scanning networks</li>';
+            networkList.innerHTML = '<li class="list-group-item text-danger">Error scanning networks</li>';
+            console.error('Error scanning networks:', error);
         });
 }
 
 function selectNetwork(ssid) {
     document.getElementById('wifiSsid').value = ssid;
+    document.getElementById('wifiPassword').focus();
 }
 
 function connectWifi() {
     const ssid = document.getElementById('wifiSsid').value;
     const password = document.getElementById('wifiPassword').value;
+    const connectBtn = document.getElementById('connectWifiBtn');
 
     if (!ssid) {
-        alert('Please select a network');
+        document.getElementById('wifiStatus').className = 'alert alert-warning';
+        document.getElementById('wifiStatus').textContent = 'Please select a network';
         return;
     }
+
+    if (password.length < 8) {
+        document.getElementById('wifiStatus').className = 'alert alert-warning';
+        document.getElementById('wifiStatus').textContent = 'Password must be at least 8 characters';
+        return;
+    }
+
+    connectBtn.disabled = true;
+    connectBtn.textContent = 'Connecting...';
+    document.getElementById('wifiStatus').className = 'alert alert-info';
+    document.getElementById('wifiStatus').textContent = 'Attempting to connect to ' + ssid;
+    document.getElementById('wifiProgress').style.display = 'block';
 
     const formData = new FormData();
     formData.append('ssid', ssid);
@@ -773,28 +812,62 @@ function connectWifi() {
 
     fetch('wifi_manager.php?action=connect', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: AbortSignal.timeout(30000) // Timeout after 30 seconds
     })
         .then(response => response.json())
         .then(data => {
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect';
+            document.getElementById('wifiProgress').style.display = 'none';
             if (data.success) {
                 document.getElementById('wifiStatus').className = 'alert alert-success';
                 document.getElementById('wifiStatus').textContent = data.message;
                 setTimeout(loadWifiStatus, 5000); // Refresh status after connection
+                document.getElementById('wifiPassword').value = ''; // Clear password
             } else {
                 document.getElementById('wifiStatus').className = 'alert alert-danger';
-                document.getElementById('wifiStatus').textContent = data.error || 'Connection failed';
+                let errorMsg = data.error || 'Connection failed';
+                if (errorMsg.includes('Secrets were required')) {
+                    errorMsg = 'Incorrect password';
+                } else if (errorMsg.includes('Network not found')) {
+                    errorMsg = 'Network not found. Please rescan.';
+                }
+                document.getElementById('wifiStatus').textContent = errorMsg;
             }
         })
         .catch(error => {
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect';
+            document.getElementById('wifiProgress').style.display = 'none';
             document.getElementById('wifiStatus').className = 'alert alert-danger';
             document.getElementById('wifiStatus').textContent = 'Error connecting to network';
+            console.error('Error connecting to WiFi:', error);
         });
 }
 
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('wifiPassword');
+    const toggleBtn = document.querySelector('#wifiForm .bi-eye');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.classList.remove('bi-eye');
+        toggleBtn.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleBtn.classList.remove('bi-eye-slash');
+        toggleBtn.classList.add('bi-eye');
+    }
+}
+
+let scanInterval;
 $('#wifiModal').on('shown.bs.modal', function() {
     loadWifiStatus();
     scanWifiNetworks();
+    scanInterval = setInterval(scanWifiNetworks, 30000); // Rescan every 30 seconds
+});
+$('#wifiModal').on('hidden.bs.modal', function() {
+    clearInterval(scanInterval); // Stop scanning when modal closes
 });
 </script>
 

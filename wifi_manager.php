@@ -1,69 +1,93 @@
 <?php
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 'On');
-
 header('Content-Type: application/json');
 
-// Check if user is authenticated
-$auth = isset($_SESSION["rpidbauth"]) ? true : false;
-if (!$auth) {
-    echo json_encode(['error' => 'Unauthorized']);
-    exit();
+function executeCommand($command) {
+    $output = shell_exec($command . ' 2>&1');
+    file_put_contents('/var/log/wifi_manager.log', date('Y-m-d H:i:s') . ": $command\n$output\n", FILE_APPEND);
+    return $output;
 }
 
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 switch ($action) {
+    case 'status':
+        // Get current WiFi status
+        $output = executeCommand('nmcli -t -f ACTIVE,SSID dev wifi');
+        $lines = explode("\n", trim($output));
+        $ssid = 'Not connected';
+        foreach ($lines as $line) {
+            if (strpos($line, 'yes:') === 0) {
+                $ssid = explode(':', $line)[1];
+                break;
+            }
+        }
+        echo json_encode(['ssid' => $ssid]);
+        break;
+
     case 'scan':
-        // Scan for available WiFi networks using iwlist
-        $output = shell_exec('sudo iwlist wlan0 scan | grep ESSID');
+        // Scan for available WiFi networks
+        executeCommand('sudo nmcli dev wifi rescan 2>/dev/null');
+        sleep(2); // Wait for scan to complete
+        $output = executeCommand('nmcli -t -f SSID,SIGNAL dev wifi');
+        $lines = explode("\n", trim($output));
         $networks = [];
-        if ($output) {
-            preg_match_all('/ESSID:"(.*?)"/', $output, $matches);
-            $networks = array_unique($matches[1]);
+        foreach ($lines as $line) {
+            $parts = explode(':', $line);
+            if (!empty($parts[0])) {
+                $networks[] = [
+                    'ssid' => $parts[0],
+                    'signal' => isset($parts[1]) ? $parts[1] : 'Unknown'
+                ];
+            }
         }
         echo json_encode(['networks' => $networks]);
         break;
 
     case 'connect':
         // Connect to a WiFi network
-        $ssid = isset($_POST['ssid']) ? $_POST['ssid'] : '';
-        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        $ssid = isset($_POST['ssid']) ? trim($_POST['ssid']) : '';
+        $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
         if (empty($ssid)) {
-            echo json_encode(['error' => 'SSID is required']);
-            exit();
+            echo json_encode(['success' => false, 'error' => 'SSID is required']);
+            exit;
         }
 
-        // Generate wpa_supplicant configuration
-        $config = "network={\n";
-        $config .= "\tssid=\"$ssid\"\n";
-        $config .= "\tpsk=\"$password\"\n";
-        $config .= "}\n";
+        // Validate SSID and password
+        if (strlen($ssid) > 32 || !preg_match('/^[a-zA-Z0-9\-_]+$/', $ssid)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid SSID']);
+            exit;
+        }
+        if ($password && (strlen($password) < 8 || strlen($password) > 63)) {
+            echo json_encode(['success' => false, 'error' => 'Password must be 8-63 characters']);
+            exit;
+        }
 
-        // Save configuration to a temporary file
-        file_put_contents('/tmp/wpa_supplicant.conf', $config, FILE_APPEND);
+        // Escape SSID and password to prevent injection
+        $ssid_escaped = escapeshellarg($ssid);
+        $password_escaped = $password ? escapeshellarg($password) : '';
 
-        // Apply configuration and restart networking
-        $result = shell_exec('sudo mv /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf && sudo systemctl restart networking');
-        if ($result === null) {
-            echo json_encode(['success' => true, 'message' => 'Connected to ' . $ssid]);
+        // Attempt to connect using sudo
+        $command = $password ?
+            "sudo nmcli --ask dev wifi connect $ssid_escaped password $password_escaped" :
+            "sudo nmcli --ask dev wifi connect $ssid_escaped";
+        $output = executeCommand($command);
+
+        if (strpos($output, 'successfully activated') !== false) {
+            echo json_encode(['success' => true, 'message' => "Connected to $ssid"]);
         } else {
-            echo json_encode(['error' => 'Failed to connect']);
+            $error_msg = $output;
+            if (strpos($output, 'Secrets were required') !== false) {
+                $error_msg = 'Incorrect password or network requires authentication';
+            } elseif (strpos($output, 'No network with SSID') !== false) {
+                $error_msg = 'Network not found';
+            }
+            echo json_encode(['success' => false, 'error' => 'Failed to connect: ' . $error_msg]);
         }
-        break;
-
-    case 'status':
-        // Get current WiFi status
-        $status = shell_exec('iwconfig wlan0 | grep ESSID');
-        preg_match('/ESSID:"(.*?)"/', $status, $match);
-        $current_ssid = isset($match[1]) ? $match[1] : 'Not connected';
-        echo json_encode(['ssid' => $current_ssid]);
         break;
 
     default:
-        echo json_encode(['error' => 'Invalid action']);
+        echo json_encode(['success' => false, 'error' => 'Invalid action']);
         break;
 }
 ?>
