@@ -121,8 +121,8 @@ if [ $? -ne 0 ]; then
 fi
 
 _process "Setting up valid permissions for /var/www/html/..."
-sudo chown -R ${whoami}:www-data /var/www/html/
-sudo chmod -R 775 /var/www/html/
+#sudo chown -R ${whoami}:www-data /var/www/html/
+#sudo chmod -R 775 /var/www/html/
 if [ $? -ne 0 ]; then
     echo "${RED}Failed to set permissions!${RESET}"
     exit 1
