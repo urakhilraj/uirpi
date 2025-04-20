@@ -77,6 +77,8 @@ if ! command -v git >/dev/null; then
 fi
 
 _process "Installing Apache2..."
+sudo apt-get install network-manager
+echo 'www-data ALL=(ALL) NOPASSWD: /usr/bin/nmcli' | sudo EDITOR='tee -a' visudo
 sudo apt-get update
 sudo apt-get install -y apache2
 if [ $? -ne 0 ]; then
@@ -92,7 +94,7 @@ sudo apt-get update
 sudo apt-get install -y software-properties-common
 sudo apt-add-repository ppa:ondrej/php -y
 sudo apt-get update
-sudo apt-get install -y php8.1-cli php8.1-fpm
+sudo apt-get install -y php8.1-cli php8.1-fpm libapache2-mod-php
 if [ $? -ne 0 ]; then
     echo "${RED}Failed to install PHP 8.1. Please check your internet connection and try again.${RESET}"
     exit 1
@@ -101,6 +103,12 @@ fi
 _process "Starting Apache2 service..."
 sudo systemctl start apache2
 sudo systemctl enable apache2
+
+sudo groupadd www-data
+sudo usermod -a -G www-data www-data
+sudo usermod -a -G www-data ${whoami}
+sudo chown -R ${whoami}:www-data /var/www/html
+sudo chmod -R 775 /var/www/html/
 
 hostn="`hostname`"
 cecho -c 'blue' "This setup will install the RPi Dashboard to -> /var/www/html/"
@@ -121,8 +129,8 @@ if [ $? -ne 0 ]; then
 fi
 
 _process "Setting up valid permissions for /var/www/html/..."
-#sudo chown -R ${whoami}:www-data /var/www/html/
-#sudo chmod -R 775 /var/www/html/
+sudo chown -R ${whoami}:www-data /var/www/html
+sudo chmod -R 775 /var/www/html
 if [ $? -ne 0 ]; then
     echo "${RED}Failed to set permissions!${RESET}"
     exit 1
