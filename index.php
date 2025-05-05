@@ -50,6 +50,67 @@ $string = trim(preg_replace('/\s\s+/', '', shell_exec("hostname")));
 <link rel="stylesheet" href="css/bootstrap-icons-1.11.1.css">
 <link rel="stylesheet" href="css/mdtoast.min.css?v=2.0.2">
 
+<style>
+/* Custom styling for Logs button to ensure visibility in both themes */
+.btn-outline-custom {
+    border-color: #6c757d; /* Gray border for light theme */
+    color: #6c757d; /* Gray text/icon for light theme */
+}
+.btn-outline-custom:hover {
+    background-color: #6c757d;
+    color: #fff;
+}
+[data-bs-theme="dark"] .btn-outline-custom {
+    border-color: #adb5bd; /* Lighter gray border for dark theme */
+    color: #adb5bd; /* Lighter gray text/icon for dark theme */
+}
+[data-bs-theme="dark"] .btn-outline-custom:hover {
+    background-color: #adb5bd;
+    color: #212529;
+}
+
+/* Custom styling for Log Viewer Modal to ensure readability in both themes */
+#logContent {
+    background-color: #f8f9fa; /* Light background for light theme */
+    color: #212529; /* Dark text for light theme */
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+[data-bs-theme="dark"] #logContent {
+    background-color: #343a40; /* Darker background for dark theme */
+    color: #e9ecef; /* Light text for dark theme */
+    border: 1px solid #495057;
+}
+
+/* Ensure the status alert in the log modal has proper contrast */
+#logStatus {
+    background-color: #e7f1ff; /* Light blue background for info in light theme */
+    color: #0a58ca; /* Dark blue text for info in light theme */
+}
+[data-bs-theme="dark"] #logStatus {
+    background-color: #1a355b; /* Darker blue background for dark theme */
+    color: #a4c6ff; /* Lighter blue text for dark theme */
+}
+#logStatus.alert-success {
+    background-color: #d4edda; /* Light green for success in light theme */
+    color: #155724; /* Dark green text for success in light theme */
+}
+[data-bs-theme="dark"] #logStatus.alert-success {
+    background-color: #2b5735; /* Darker green for success in dark theme */
+    color: #a7d5b3; /* Lighter green text for dark theme */
+}
+#logStatus.alert-danger {
+    background-color: #f8d7da; /* Light red for danger in light theme */
+    color: #721c24; /* Dark red text for danger in light theme */
+}
+[data-bs-theme="dark"] #logStatus.alert-danger {
+    background-color: #5c2a30; /* Darker red for danger in dark theme */
+    color: #f1a5ab; /* Lighter red text for dark theme */
+}
+</style>
+
 <title><?php system("hostname"); ?> - Loading...</title>
 
 <?php
@@ -100,7 +161,7 @@ if ($auth) {
         <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"></path>
     </symbol>
     <symbol id="sun-fill" viewBox="0 0 16 16">
-        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
+        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 1 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
     </symbol>
 </svg>
 <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
@@ -145,13 +206,15 @@ if ($auth) {
         </div>
 
         <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> · <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
-                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> · <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
+            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> Â· <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
+                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> Â· <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
         </ul>
 
         <div class="col-md-3 text-end">
             <button class="btn btn-outline-secondary mb-2" style="margin-bottom: 1px!important;" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i> Options</button>
             <button class="btn btn-outline-primary mb-2" style="margin-bottom: 1px!important;" onclick="$('#wifiModal').modal('show');"><i class="bi bi-wifi"></i> WiFi</button>
+            <button class="btn btn-outline-info mb-2" style="margin-bottom: 1px!important;" onclick="$('#promptModal').modal('show');"><i class="bi bi-pencil-square"></i> Prompt</button>
+            <button class="btn btn-outline-custom mb-2" style="margin-bottom: 1px!important;" onclick="$('#logModal').modal('show');"><i class="bi bi-file-text"></i> Logs</button>
         </div>
     </header>
 </div>
@@ -197,7 +260,7 @@ if ($auth) {
             <div class="card text-center shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title"><i class="bi bi-cpu"></i> <span id="cput"></span></h5>
-                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> · 5 min: <b><span id="m5"></span></b> · 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
+                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> Â· 5 min: <b><span id="m5"></span></b> Â· 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
             </div>
@@ -220,7 +283,7 @@ if ($auth) {
                         <div class="progress-bar bg-success" id="ram1" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                         <div class="progress-bar bg-danger" id="ram2" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> · Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
+                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> Â· Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
                     <p class="card-text"><span id="swapsys"></span></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
@@ -256,7 +319,7 @@ if ($auth) {
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title"><i class="bi bi-hdd"></i> Disk Space</h5>
-                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> · Free: <b><?php echo $df_rund; ?> GB</b> · Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
+                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> Â· Free: <b><?php echo $df_rund; ?> GB</b> Â· Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
             </div>
@@ -320,7 +383,7 @@ if ($auth) {
         </div>
     </div>
     <div class="row pt-3">
-        <div符合要求 class="col-sm-6 pt-1 pt-md-0">
+        <div class="col-sm-6 pt-1 pt-md-0">
             <div class="card text-center">
                 <div class="card-header">Hostnamectl</div>
                 <div class="card-body">
@@ -481,6 +544,55 @@ if ($auth) {
     </div>
 </div>
 
+<!-- Prompt Editor Modal -->
+<div class="modal fade" id="promptModal" tabindex="-1" aria-labelledby="promptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="promptModalLabel"><i class="bi bi-pencil-square"></i> Prompt Editor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="promptForm">
+                    <div class="mb-3">
+                        <label for="promptInput" class="form-label">Prompt Content (up to 500 words)</label>
+                        <textarea id="promptInput" class="form-control" rows="6" maxlength="500" placeholder="Enter or edit prompt content..."></textarea>
+                        <small class="form-text text-muted">This content will be saved as acubotzPrompt.txt</small>
+                    </div>
+                    <div id="promptFeedback"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-success" id="savePromptBtn">Save</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Viewer Modal -->
+<div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logModalLabel"><i class="bi bi-file-text"></i> Program Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="logStatus" class="alert alert-info mb-3">
+                    Status: <span id="logStatusText">Loading logs...</span>
+                </div>
+                <pre id="logContent"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearLogContent()">Clear</button>
+                <button type="button" class="btn btn-outline-primary" onclick="fetchLogs()">Refresh</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- About/Help Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
@@ -493,7 +605,7 @@ if ($auth) {
                 <h4 class="mb-0">Appearance</h4>
                 <div class="custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="tempunit">
-                    <label class="custom-control-label" for="tempunit">Show Fahrenheit (°F) values</label>
+                    <label class="custom-control-label" for="tempunit">Show Fahrenheit (Â°F) values</label>
                 </div>
                 <h4 class="mb-0">Threshold values</h4>
                 <small class="text-muted">Throwing a warning (permanently saved)</small>
@@ -501,7 +613,7 @@ if ($auth) {
                     <div class="form-row">
                         <div class="col">
                             <input type="number" id="warn_cpu_temp" class="form-control" placeholder="default: 65" aria-describedby="critCpuTempHelp" min="20" max="80" value="<?= $config->modified("thresholds.warn_cpu_temp") ?>">
-                            <small id="critCpuTempHelp" class="form-text text-muted">CPU Temperature (°C) - default: 65°C</small>
+                            <small id="critCpuTempHelp" class="form-text text-muted">CPU Temperature (Â°C) - default: 65Â°C</small>
                         </div>
                         <div class="col">
                             <input type="number" id="warn_ram_space" class="form-control" placeholder="default: 80" aria-describedby="critRamSizeHelp" min="0" max="100" value="<?= $config->modified("thresholds.warn_ram_space") ?>">
@@ -521,15 +633,6 @@ if ($auth) {
                         </div>
                         <small id="dbRefreshHelp" class="col form-text text-muted">Refresh interval of live data update section (recommended: 10 - 60 sec) - default: 15</small>
                     </div>
-                    <h4 class="mb-0">Robo Data Input</h4>
-                    <small class="text-muted">Enter up to 500 words (saved as acubotzPrompt.txt)</small>
-                    <div class="form-row">
-                        <div class="col">
-                            <textarea id="robo_data_input" class="form-control" rows="4" maxlength="500" placeholder="Enter data..."></textarea>
-                            <small class="form-text text-muted">This input will be saved as acubotzPrompt.txt</small>
-                        </div>
-                    </div>
-
                     <h4 class="mb-0">Authentication</h4>
                     <div class="form-row mb-2">
                         <div class="col">
@@ -558,7 +661,7 @@ if ($auth) {
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-                                <h3><span class='text-success'>✓</span> Version 1.1.5</h3>
+                                <h3><span class='text-success'>âœ“</span> Version 1.1.5</h3>
                                 <ul><li>live page title with hostname + status of monitored device</li><li>overhauled project documentation / readme</li><li><a href=''>Stay updated here</a></li><li><i><a href="CHANGELOG.md">All changes</a></i></li></ul>
                                 <small>most important changes since device Dashboard v1.0</small>
                             </div>
@@ -626,36 +729,11 @@ if ($auth) {
 <!-- Footer -->
 <footer style="line-height: 40px; margin-top: 10px;" class="border-top py-1">
     <div class="container text-center">
-        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">·</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
+        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">Â·</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
         <button class="btn btn-secondary mb-2" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i> Options</button>
         <hr style="margin-top: 0; margin-bottom: 0;">
     </div>
 </footer>
-
-<script>
-document.getElementById("applyBtn").addEventListener("click", function () {
-    let data = document.getElementById("robo_data_input").value;
-    
-    if (data.trim().length > 0) {
-        fetch("save_robo_data.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: "data=" + encodeURIComponent(data),
-        })
-        .then(response => response.text())
-        .then(result => {
-            document.getElementById("sformFeedback").innerHTML = `<div class="alert alert-success">Data saved successfully!</div>`;
-        })
-        .catch(error => {
-            document.getElementById("sformFeedback").innerHTML = `<div class="alert alert-danger">Error saving data.</div>`;
-        });
-    } else {
-        document.getElementById("sformFeedback").innerHTML = `<div class="alert alert-warning">Please enter some data before saving.</div>`;
-    }
-});
-</script>
 
 <script src="js/jquery-3.5.1.min.js"></script>
 <script src="js/bootstrap-5.3.2.bundle.min.js"></script>
@@ -679,6 +757,90 @@ console.log("Custom user options: warncputemp=" + warn_cpu_temp + " | warn_ram_s
 var hostname = <?= "'" . $string . "'"; ?>;
 $('.modal').on('shown.bs.modal', function() {
     $(this).find('[autofocus]').focus();
+});
+</script>
+
+<script>
+// Load prompt content when Prompt Editor modal is shown
+$('#promptModal').on('shown.bs.modal', function() {
+    fetch('load_robo_data.php')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('promptInput').value = data;
+            document.getElementById('promptFeedback').innerHTML = '';
+        })
+        .catch(error => {
+            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error loading prompt data.</div>`;
+            console.error('Error loading prompt:', error);
+        });
+});
+
+// Save prompt content when Save button is clicked
+document.getElementById('savePromptBtn').addEventListener('click', function() {
+    let data = document.getElementById('promptInput').value;
+    
+    if (data.trim().length > 0) {
+        fetch('save_robo_data.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'data=' + encodeURIComponent(data),
+        })
+        .then(response => response.text())
+        .then(result => {
+            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-success">Prompt saved successfully!</div>`;
+        })
+        .catch(error => {
+            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error saving prompt.</div>`;
+            console.error('Error saving prompt:', error);
+        });
+    } else {
+        document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-warning">Please enter some prompt content before saving.</div>`;
+    }
+});
+
+// Log Viewer Functions
+let logPollInterval;
+
+function fetchLogs() {
+    const logContent = document.getElementById('logContent');
+    const logStatus = document.getElementById('logStatus');
+    const logStatusText = document.getElementById('logStatusText');
+
+    logStatus.className = 'alert alert-info';
+    logStatusText.textContent = 'Loading logs...';
+
+    fetch('read_log.php')
+        .then(response => response.text())
+        .then(data => {
+            logContent.textContent = data;
+            logStatus.className = 'alert alert-success';
+            logStatusText.textContent = 'Logs loaded';
+            logContent.scrollTop = logContent.scrollHeight; // Auto-scroll to bottom
+        })
+        .catch(error => {
+            logStatus.className = 'alert alert-danger';
+            logStatusText.textContent = 'Error loading logs';
+            logContent.textContent = 'Failed to load logs: ' + error.message;
+            console.error('Error fetching logs:', error);
+        });
+}
+
+function clearLogContent() {
+    document.getElementById('logContent').textContent = '';
+    document.getElementById('logStatus').className = 'alert alert-info';
+    document.getElementById('logStatusText').textContent = 'Logs cleared';
+}
+
+$('#logModal').on('shown.bs.modal', function() {
+    fetchLogs();
+    logPollInterval = setInterval(fetchLogs, 5000); // Poll every 5 seconds
+});
+
+$('#logModal').on('hidden.bs.modal', function() {
+    clearInterval(logPollInterval); // Stop polling when modal closes
+    clearLogContent();
 });
 </script>
 
@@ -743,7 +905,7 @@ function loadWifiStatus() {
             document.getElementById('wifiStatus').className = 'alert alert-' + (data.ssid ? 'success' : 'warning');
         })
         .catch(error => {
-            document.getElementById('wifiStatus').className = 'alert alert-danger';
+            document.getElementFromId('wifiStatus').className = 'alert alert-danger';
             document.getElementById('currentSsid').textContent = 'Error fetching status';
             console.error('Error fetching WiFi status:', error);
         });
