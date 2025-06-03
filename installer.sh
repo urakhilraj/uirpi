@@ -79,6 +79,7 @@ fi
 _process "Installing Apache2..."
 sudo apt-get install network-manager
 echo 'www-data ALL=(ALL) NOPASSWD: /usr/bin/nmcli' | sudo EDITOR='tee -a' visudo
+echo 'www-data ALL=NOPASSWD: /sbin/shutdown' | sudo EDITOR='tee -a' visudo
 sudo apt-get update
 sudo apt-get install -y apache2
 if [ $? -ne 0 ]; then
