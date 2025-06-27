@@ -1,31 +1,3 @@
-<?php
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 'On');
-
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-
-require "backend/Config.php";
-$config = new Config;
-$config->load("local.config", "defaults.php");
-
-$auth = (isset($_SESSION["rpidbauth"])) ? true : false;
-
-if (!isset($_SESSION["setup"])) {
-    if (($config->get("general.initialsetup") == "0") || ($config->get("general.initialsetup") == "")) {
-        header("Location: setup.php");
-    }
-}
-
-$path = $_SERVER['SCRIPT_FILENAME'];
-$fol = substr($path, 0, -9);
-
-$passVal = ($config->get("general.pass") !== '63a9f0ea7bb98050796b649e85481845') ? "***notdefault***" : '';
-
-$string = trim(preg_replace('/\s\s+/', '', shell_exec("hostname")));
-?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -53,16 +25,16 @@ $string = trim(preg_replace('/\s\s+/', '', shell_exec("hostname")));
 <style>
 /* Custom styling for Logs button to ensure visibility in both themes */
 .btn-outline-custom {
-    border-color: #6c757d; /* Gray border for light theme */
-    color: #6c757d; /* Gray text/icon for light theme */
+    border-color: #6c757d;
+    color: #6c757d;
 }
 .btn-outline-custom:hover {
     background-color: #6c757d;
     color: #fff;
 }
 [data-bs-theme="dark"] .btn-outline-custom {
-    border-color: #adb5bd; /* Lighter gray border for dark theme */
-    color: #adb5bd; /* Lighter gray text/icon for dark theme */
+    border-color: #adb5bd;
+    color: #adb5bd;
 }
 [data-bs-theme="dark"] .btn-outline-custom:hover {
     background-color: #adb5bd;
@@ -71,68 +43,86 @@ $string = trim(preg_replace('/\s\s+/', '', shell_exec("hostname")));
 
 /* Custom styling for Log Viewer Modal to ensure readability in both themes */
 #logContent {
-    background-color: #f8f9fa; /* Light background for light theme */
-    color: #212529; /* Dark text for light theme */
+    background-color: #f8f9fa;
+    color: #212529;
     border: 1px solid #dee2e6;
     padding: 10px;
     max-height: 400px;
     overflow-y: auto;
 }
 [data-bs-theme="dark"] #logContent {
-    background-color: #343a40; /* Darker background for dark theme */
-    color: #e9ecef; /* Light text for dark theme */
+    background-color: #343a40;
+    color: #e9ecef;
     border: 1px solid #495057;
 }
 
 /* Ensure the status alert in the log modal has proper contrast */
 #logStatus {
-    background-color: #e7f1ff; /* Light blue background for info in light theme */
-    color: #0a58ca; /* Dark blue text for info in light theme */
+    background-color: #e7f1ff;
+    color: #0a58ca;
 }
 [data-bs-theme="dark"] #logStatus {
-    background-color: #1a355b; /* Darker blue background for dark theme */
-    color: #a4c6ff; /* Lighter blue text for dark theme */
+    background-color: #1a355b;
+    color: #a4c6ff;
 }
 #logStatus.alert-success {
-    background-color: #d4edda; /* Light green for success in light theme */
-    color: #155724; /* Dark green text for success in light theme */
+    background-color: #d4edda;
+    color: #155724;
 }
 [data-bs-theme="dark"] #logStatus.alert-success {
-    background-color: #2b5735; /* Darker green for success in dark theme */
-    color: #a7d5b3; /* Lighter green text for dark theme */
+    background-color: #2b5735;
+    color: #a7d5b3;
 }
 #logStatus.alert-danger {
-    background-color: #f8d7da; /* Light red for danger in light theme */
-    color: #721c24; /* Dark red text for danger in light theme */
+    background-color: #f8d7da;
+    color: #721c24;
 }
 [data-bs-theme="dark"] #logStatus.alert-danger {
-    background-color: #5c2a30; /* Darker red for danger in dark theme */
-    color: #f1a5ab; /* Lighter red text for dark theme */
+    background-color: #5c2a30;
+    color: #f1a5ab;
 }
 </style>
 
 <title><?php system("hostname"); ?> - Loading...</title>
 
 <?php
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 'On');
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+require "backend/Config.php";
+$config = new Config;
+$config->load("local.config", "defaults.php");
+
+$auth = (isset($_SESSION["rpidbauth"])) ? true : false;
+
+if (!isset($_SESSION["setup"])) {
+    if (($config->get("general.initialsetup") == "0") || ($config->get("general.initialsetup") == "")) {
+        header("Location: setup.php");
+    }
+}
+
+$path = $_SERVER['SCRIPT_FILENAME'];
+$fol = substr($path, 0, -9);
+
+$passVal = ($config->get("general.pass") !== '63a9f0ea7bb98050796b649e85481845') ? "***notdefault***" : '';
+
+$string = trim(preg_replace('/\s\s+/', '', shell_exec("hostname")));
+
 if ($auth) {
     $upt = new DateTime(shell_exec('uptime -s'));
     $uptstr = $upt->format('d.m.Y H:i:s');
-    // Disk space
     $df = disk_free_space("/");
-    $df = $df / 1000; // KB
-    $df = $df / 1000; // MB
-    $df = $df / 1000; // GB
-
+    $df = $df / 1000 / 1000 / 1000; // GB
     $ds = disk_total_space("/");
-    $ds = $ds / 1000; // KB
-    $ds = $ds / 1000; // MB
-    $ds = $ds / 1000; // GB
-
+    $ds = $ds / 1000 / 1000 / 1000; // GB
     $df_rund = round($df, 2);
     $ds_rund = round($ds, 2);
-
     $p = $df / $ds * 100;
-    //
 
     $permissionerr = false;
     $spannung = substr(exec("vcgencmd measure_volts core"), 5);
@@ -206,8 +196,8 @@ if ($auth) {
         </div>
 
         <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> Â· <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
-                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> Â· <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
+            <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> · <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
+                <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> · <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
         </ul>
 
         <div class="col-md-3 text-end">
@@ -235,10 +225,9 @@ if ($auth) {
                         unset($_SESSION["setup"]);
                     }
                     ?>
-
                     <p id="sys2" class="card-text"></p>
                     <hr>
-                    <p><i class="bi bi-clock-history"></i> Uptime: <b><span id="uptime"></span></b><?php if ($auth) { ?> (started <?= $uptstr; ?>)<?php } ?></p>
+                    <p><i class="bi bi-clock-history"></i> Uptime: <b><span id="uptime"></span></-improvised></b><?php if ($auth) { ?> (started <?= $uptstr; ?>)<?php } ?></p>
                     <table style="width:100%"><tbody><tr><td style="width:10%"><button type="button" id="pctl" onclick="y=100; this.innerHTML=togglep(true);" class="btn btn-secondary btn-sm"><i class="bi bi-pause"></i></button></td><td style="width:90%">
                             <div class="progress" style="margin-top: 1px; height: 2px;"><div class="progress-bar py" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div></td></tr></tbody></table>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
@@ -260,7 +249,7 @@ if ($auth) {
             <div class="card text-center shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title"><i class="bi bi-cpu"></i> <span id="cput"></span></h5>
-                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> Â· 5 min: <b><span id="m5"></span></b> Â· 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
+                    <p class="card-text"><canvas id="myChart"></canvas>1 min: <b><span id="m1"></span></b> · 5 min: <b><span id="m5"></span></b> · 15 min: <b><span id="m15"></span></b><br>CPU clock: <b><span id="frequency"></span> MHz</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
             </div>
@@ -269,7 +258,7 @@ if ($auth) {
             <div class="card text-center shadow-sm">
                 <div class="card-body">
                     <h5 id="tempstate" class="card-title"></h5>
-                    <div id="indicatorContainer"></div><!--CPU-Indicator-->
+                    <div id="indicatorContainer"></div>
                     <p class="card-text"><b><span style="font-size: 20px" id="temperature"></span></b></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
@@ -283,14 +272,14 @@ if ($auth) {
                         <div class="progress-bar bg-success" id="ram1" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                         <div class="progress-bar bg-danger" id="ram2" role="progressbar" style="" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> Â· Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
+                    <p class="card-text">Free: <b><span id="memfree"></span> MB</b> · Used: <b><span id="memused"></span> MB</b><br>Total: <b><span id="memtotal"></span> MB</b></p>
                     <p class="card-text"><span id="swapsys"></span></p>
                     <p class="card-text"><small class="text-muted">Updated <span name="lastupdated">now</span></small></p>
                 </div>
             </div>
         </div>
     </div>
-    <hr id="ldiv" class="my-4<?php if (!$auth) { echo " hidden"; } ?>"><!-- Static infos, that won't be updated -->
+    <hr id="ldiv" class="my-4<?php if (!$auth) { echo " hidden"; } ?>">
     <?php
     if ($auth) {
     ?>
@@ -319,7 +308,7 @@ if ($auth) {
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title"><i class="bi bi-hdd"></i> Disk Space</h5>
-                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> Â· Free: <b><?php echo $df_rund; ?> GB</b> Â· Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
+                    <p class="card-text"><canvas height="100" class="doughnut-chart-container" id="space"></canvas>Total: <b><?php echo $ds_rund; ?> GB</b> · Free: <b><?php echo $df_rund; ?> GB</b> · Used: <b><?php echo round($ds - $df, 2); ?> GB</b></p>
                     <p class="card-text"><small class="text-muted">Updated <span><?php echo date("H:i:s"); ?> (at page load)</span></small></p>
                 </div>
             </div>
@@ -402,12 +391,10 @@ if ($auth) {
             </div>
         </div>
     </div>
-
     <?php
     } else {
     ?>
     <div style="text-align:center" id="lock_section"><i style="width: 100px;height:100px;color:#aaa" class="bi bi-shield-lock"></i><br>You are not authorized!</div>
-
     <?php
     }
     ?>
@@ -605,7 +592,7 @@ if ($auth) {
                 <h4 class="mb-0">Appearance</h4>
                 <div class="custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="tempunit">
-                    <label class="custom-control-label" for="tempunit">Show Fahrenheit (Â°F) values</label>
+                    <label class="custom-control-label" for="tempunit">Show Fahrenheit (°F) values</label>
                 </div>
                 <h4 class="mb-0">Threshold values</h4>
                 <small class="text-muted">Throwing a warning (permanently saved)</small>
@@ -613,7 +600,7 @@ if ($auth) {
                     <div class="form-row">
                         <div class="col">
                             <input type="number" id="warn_cpu_temp" class="form-control" placeholder="default: 65" aria-describedby="critCpuTempHelp" min="20" max="80" value="<?= $config->modified("thresholds.warn_cpu_temp") ?>">
-                            <small id="critCpuTempHelp" class="form-text text-muted">CPU Temperature (Â°C) - default: 65Â°C</small>
+                            <small id="critCpuTempHelp" class="form-text text-muted">CPU Temperature (°C) - default: 65°C</small>
                         </div>
                         <div class="col">
                             <input type="number" id="warn_ram_space" class="form-control" placeholder="default: 80" aria-describedby="critRamSizeHelp" min="0" max="100" value="<?= $config->modified("thresholds.warn_ram_space") ?>">
@@ -645,6 +632,22 @@ if ($auth) {
                             <div class="invalid-feedback">Repeated password not correct!</div>
                         </div>
                     </div>
+                    <h4 class="mb-0">OpenAI API Key</h4>
+                    <div class="form-row mb-2">
+                        <div class="col">
+                            <div class="input-group">
+                                <input type="text" id="openai_apikey" class="form-control" placeholder="Enter OpenAI API Key" aria-describedby="apiKeyHelp">
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleApiKeyVisibility()">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <small id="apiKeyHelp" class="form-text text-muted">Enter your OpenAI API key (saved to /var/www/html/api_key.txt)</small>
+                        </div>
+                        <div class="col">
+                            <button type="button" id="verifyApiKeyBtn" class="btn btn-outline-primary">Verify API Key</button>
+                        </div>
+                    </div>
+                    <div id="apiKeyFeedback"></div>
                     <button type="button" id="applyBtn" class="btn btn-outline-success">Apply</button>
                     <button type="button" id="discardBtn" class="btn btn-outline-secondary">Discard changes</button>
                     <button type="button" id="defaultsBtn" class="btn btn-outline-primary">Defaults</button>
@@ -661,7 +664,7 @@ if ($auth) {
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-                                <h3><span class='text-success'>âœ“</span> Version 1.1.5</h3>
+                                <h3><span class='text-success'>✓</span> Version 1.1.5</h3>
                                 <ul><li>live page title with hostname + status of monitored device</li><li>overhauled project documentation / readme</li><li><a href=''>Stay updated here</a></li><li><i><a href="CHANGELOG.md">All changes</a></i></li></ul>
                                 <small>most important changes since device Dashboard v1.0</small>
                             </div>
@@ -729,7 +732,7 @@ if ($auth) {
 <!-- Footer -->
 <footer style="line-height: 40px; margin-top: 10px;" class="border-top py-1">
     <div class="container text-center">
-        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">Â·</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
+        Acubotz Dashboard v1.1.5 <span class="text-muted">(Nov 2023)</span> <span id="dot">·</span> <span id="notf" class="text-success">See the <a href="">Github releases</a> for updates!</span><br />
         <button class="btn btn-secondary mb-2" onclick="$('#exampleModal').modal('show');"><i class="bi bi-gear"></i> Options</button>
         <hr style="margin-top: 0; margin-bottom: 0;">
     </div>
@@ -752,15 +755,128 @@ temp_unit = <?= $config->get("general.tempunit") ?>;
 })();
 
 console.log("Temp unit setting: ", temp_unit);
-var settingsKeys = ["warn_cpu_temp", "warn_ram_space", "warn_loads_size", "upd_time_interval", "pass", "tempunit"];
+var settingsKeys = ["warn_cpu_temp", "warn_ram_space", "warn_loads_size", "upd_time_interval", "pass", "tempunit", "openai_apikey"];
 console.log("Custom user options: warncputemp=" + warn_cpu_temp + " | warn_ram_space=" + warn_ram_space + " | upd_time_interval=" + upd_time_interval + " | warn_loads_size=" + warn_loads_size);
 var hostname = <?= "'" . $string . "'"; ?>;
 $('.modal').on('shown.bs.modal', function() {
     $(this).find('[autofocus]').focus();
 });
-</script>
 
-<script>
+// Load API key when Options modal is shown
+$('#exampleModal').on('shown.bs.modal', function() {
+    fetch('load_api_key.php')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('openai_apikey').value = data.trim();
+            document.getElementById('apiKeyFeedback').innerHTML = '';
+        })
+        .catch(error => {
+            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error loading API key.</div>`;
+            console.error('Error loading API key:', error);
+        });
+});
+
+// Toggle API key visibility
+function toggleApiKeyVisibility() {
+    const apiKeyInput = document.getElementById('openai_apikey');
+    const toggleBtn = document.querySelector('#settingsForm .bi-eye');
+    if (apiKeyInput.type === 'text') {
+        apiKeyInput.type = 'password';
+        toggleBtn.classList.remove('bi-eye-slash');
+        toggleBtn.classList.add('bi-eye');
+    } else {
+        apiKeyInput.type = 'text';
+        toggleBtn.classList.remove('bi-eye');
+        toggleBtn.classList.add('bi-eye-slash');
+    }
+}
+
+// Verify API key
+document.getElementById('verifyApiKeyBtn').addEventListener('click', function() {
+    const apiKey = document.getElementById('openai_apikey').value.trim();
+    const feedback = document.getElementById('apiKeyFeedback');
+    feedback.innerHTML = `<div class="alert alert-info">Verifying API key...</div>`;
+
+    if (!apiKey) {
+        feedback.innerHTML = `<div class="alert alert-warning">Please enter an API key.</div>`;
+        return;
+    }
+
+    fetch('verify_api_key.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'api_key=' + encodeURIComponent(apiKey),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            feedback.innerHTML = `<div class="alert alert-success">API key is valid!</div>`;
+        } else {
+            feedback.innerHTML = `<div class="alert alert-danger">Invalid API key: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        feedback.innerHTML = `<div class="alert alert-danger">Error verifying API key.</div>`;
+        console.error('Error verifying API key:', error);
+    });
+});
+
+// Update Apply button to save API key
+document.getElementById('applyBtn').addEventListener('click', function() {
+    const pass = document.getElementById('pass').value;
+    const pass2 = document.getElementById('pass2').value;
+    const apiKey = document.getElementById('openai_apikey').value.trim();
+
+    if (pass !== pass2) {
+        document.getElementById('pass2').classList.add('is-invalid');
+        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-danger">Passwords do not match!</div>`;
+        return;
+    }
+
+    const formData = new FormData();
+    settingsKeys.forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            formData.append(key, element.type === 'checkbox' ? element.checked : element.value);
+        }
+    });
+
+    fetch('save_settings.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-success">Settings and API key saved successfully!</div>`;
+        document.getElementById('pass2').classList.remove('is-invalid');
+    })
+    .catch(error => {
+        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-danger">Error saving settings and API key.</div>`;
+        console.error('Error saving settings:', error);
+    });
+
+    // Save API key separately
+    if (apiKey) {
+        fetch('save_api_key.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'api_key=' + encodeURIComponent(apiKey),
+        })
+        .then(response => response.text())
+        .then(result => {
+            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-success">API key saved successfully!</div>`;
+        })
+        .catch(error => {
+            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error saving API key.</div>`;
+            console.error('Error saving API key:', error);
+        });
+    }
+});
+
 // Load prompt content when Prompt Editor modal is shown
 $('#promptModal').on('shown.bs.modal', function() {
     fetch('load_robo_data.php')
@@ -817,7 +933,7 @@ function fetchLogs() {
             logContent.textContent = data;
             logStatus.className = 'alert alert-success';
             logStatusText.textContent = 'Logs loaded';
-            logContent.scrollTop = logContent.scrollHeight; // Auto-scroll to bottom
+            logContent.scrollTop = logContent.scrollHeight;
         })
         .catch(error => {
             logStatus.className = 'alert alert-danger';
@@ -835,11 +951,11 @@ function clearLogContent() {
 
 $('#logModal').on('shown.bs.modal', function() {
     fetchLogs();
-    logPollInterval = setInterval(fetchLogs, 5000); // Poll every 5 seconds
+    logPollInterval = setInterval(fetchLogs, 5000);
 });
 
 $('#logModal').on('hidden.bs.modal', function() {
-    clearInterval(logPollInterval); // Stop polling when modal closes
+    clearInterval(logPollInterval);
     clearLogContent();
 });
 </script>
@@ -905,7 +1021,7 @@ function loadWifiStatus() {
             document.getElementById('wifiStatus').className = 'alert alert-' + (data.ssid ? 'success' : 'warning');
         })
         .catch(error => {
-            document.getElementFromId('wifiStatus').className = 'alert alert-danger';
+            document.getElementById('wifiStatus').className = 'alert alert-danger';
             document.getElementById('currentSsid').textContent = 'Error fetching status';
             console.error('Error fetching WiFi status:', error);
         });
@@ -975,7 +1091,7 @@ function connectWifi() {
     fetch('wifi_manager.php?action=connect', {
         method: 'POST',
         body: formData,
-        signal: AbortSignal.timeout(30000) // Timeout after 30 seconds
+        signal: AbortSignal.timeout(30000)
     })
         .then(response => response.json())
         .then(data => {
@@ -985,8 +1101,8 @@ function connectWifi() {
             if (data.success) {
                 document.getElementById('wifiStatus').className = 'alert alert-success';
                 document.getElementById('wifiStatus').textContent = data.message;
-                setTimeout(loadWifiStatus, 5000); // Refresh status after connection
-                document.getElementById('wifiPassword').value = ''; // Clear password
+                setTimeout(loadWifiStatus, 5000);
+                document.getElementById('wifiPassword').value = '';
             } else {
                 document.getElementById('wifiStatus').className = 'alert alert-danger';
                 let errorMsg = data.error || 'Connection failed';
@@ -1026,10 +1142,10 @@ let scanInterval;
 $('#wifiModal').on('shown.bs.modal', function() {
     loadWifiStatus();
     scanWifiNetworks();
-    scanInterval = setInterval(scanWifiNetworks, 30000); // Rescan every 30 seconds
+    scanInterval = setInterval(scanWifiNetworks, 30000);
 });
 $('#wifiModal').on('hidden.bs.modal', function() {
-    clearInterval(scanInterval); // Stop scanning when modal closes
+    clearInterval(scanInterval);
 });
 </script>
 
