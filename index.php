@@ -151,7 +151,7 @@ if ($auth) {
         <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"></path>
     </symbol>
     <symbol id="sun-fill" viewBox="0 0 16 16">
-        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 1 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
+        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 0 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
     </symbol>
 </svg>
 <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
@@ -641,7 +641,7 @@ if ($auth) {
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
-                            <small id="apiKeyHelp" class="form-text text-muted">Enter your OpenAI API key (saved to /var/www/html/api_key.txt)</small>
+                            <small id="apiKeyHelp" class="form-text text-muted">Enter your OpenAI API key (autosaved to /var/www/html/api_key.txt)</small>
                         </div>
                         <div class="col">
                             <button type="button" id="verifyApiKeyBtn" class="btn btn-outline-primary">Verify API Key</button>
@@ -762,16 +762,64 @@ $('.modal').on('shown.bs.modal', function() {
     $(this).find('[autofocus]').focus();
 });
 
+// Function to autosave API key
+function saveApiKey(apiKey) {
+    if (!apiKey) {
+        document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-warning">No API key to save.</div>`;
+        return;
+    }
+    fetch('save_api_key.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'api_key=' + encodeURIComponent(apiKey),
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+            });
+        }
+        return response.text();
+    })
+    .then(result => {
+        document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-success">API key autosaved successfully!</div>`;
+    })
+    .catch(error => {
+        document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error autosaving API key: ${error.message}</div>`;
+        console.error('Error autosaving API key:', error);
+    });
+}
+
+// Debounce function to limit autosave frequency
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 // Load API key when Options modal is shown
 $('#exampleModal').on('shown.bs.modal', function() {
     fetch('load_api_key.php')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
         .then(data => {
             document.getElementById('openai_apikey').value = data.trim();
             document.getElementById('apiKeyFeedback').innerHTML = '';
         })
         .catch(error => {
-            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error loading API key.</div>`;
+            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error loading API key: ${error.message}</div>`;
             console.error('Error loading API key:', error);
         });
 });
@@ -791,7 +839,7 @@ function toggleApiKeyVisibility() {
     }
 }
 
-// Verify API key
+// Verify API key and autosave on success
 document.getElementById('verifyApiKeyBtn').addEventListener('click', function() {
     const apiKey = document.getElementById('openai_apikey').value.trim();
     const feedback = document.getElementById('apiKeyFeedback');
@@ -809,25 +857,39 @@ document.getElementById('verifyApiKeyBtn').addEventListener('click', function() 
         },
         body: 'api_key=' + encodeURIComponent(apiKey),
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             feedback.innerHTML = `<div class="alert alert-success">API key is valid!</div>`;
+            saveApiKey(apiKey); // Autosave after successful verification
         } else {
             feedback.innerHTML = `<div class="alert alert-danger">Invalid API key: ${data.error}</div>`;
         }
     })
     .catch(error => {
-        feedback.innerHTML = `<div class="alert alert-danger">Error verifying API key.</div>`;
+        feedback.innerHTML = `<div class="alert alert-danger">Error verifying API key: ${error.message}</div>`;
         console.error('Error verifying API key:', error);
     });
 });
 
-// Update Apply button to save API key
+// Autosave API key on input change with debounce
+const debouncedSaveApiKey = debounce(saveApiKey, 1000);
+document.getElementById('openai_apikey').addEventListener('input', function() {
+    const apiKey = this.value.trim();
+    debouncedSaveApiKey(apiKey);
+});
+
+// Update Apply button to save settings (API key saving is now handled by autosave)
 document.getElementById('applyBtn').addEventListener('click', function() {
     const pass = document.getElementById('pass').value;
     const pass2 = document.getElementById('pass2').value;
-    const apiKey = document.getElementById('openai_apikey').value.trim();
 
     if (pass !== pass2) {
         document.getElementById('pass2').classList.add('is-invalid');
@@ -838,7 +900,7 @@ document.getElementById('applyBtn').addEventListener('click', function() {
     const formData = new FormData();
     settingsKeys.forEach(key => {
         const element = document.getElementById(key);
-        if (element) {
+        if (element && key !== 'openai_apikey') { // Exclude API key as it's autosaved
             formData.append(key, element.type === 'checkbox' ? element.checked : element.value);
         }
     });
@@ -847,46 +909,47 @@ document.getElementById('applyBtn').addEventListener('click', function() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.text())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.text();
+    })
     .then(data => {
-        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-success">Settings and API key saved successfully!</div>`;
+        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-success">Settings saved successfully!</div>`;
         document.getElementById('pass2').classList.remove('is-invalid');
     })
     .catch(error => {
-        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-danger">Error saving settings and API key.</div>`;
+        document.getElementById('sformFeedback').innerHTML = `<div class="alert alert-danger">Error saving settings: ${error.message}</div>`;
         console.error('Error saving settings:', error);
     });
+});
 
-    // Save API key separately
-    if (apiKey) {
-        fetch('save_api_key.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'api_key=' + encodeURIComponent(apiKey),
-        })
-        .then(response => response.text())
-        .then(result => {
-            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-success">API key saved successfully!</div>`;
-        })
-        .catch(error => {
-            document.getElementById('apiKeyFeedback').innerHTML = `<div class="alert alert-danger">Error saving API key.</div>`;
-            console.error('Error saving API key:', error);
-        });
+// Focus management for modals to prevent aria-hidden issues
+$('.modal').on('hidden.bs.modal', function() {
+    const trigger = document.activeElement;
+    if (trigger && trigger.getAttribute('data-bs-toggle') === 'modal') {
+        trigger.focus();
+    } else {
+        document.querySelector('.btn-outline-secondary[data-bs-target="#exampleModal"]').focus();
     }
 });
 
 // Load prompt content when Prompt Editor modal is shown
 $('#promptModal').on('shown.bs.modal', function() {
     fetch('load_robo_data.php')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
         .then(data => {
             document.getElementById('promptInput').value = data;
             document.getElementById('promptFeedback').innerHTML = '';
         })
         .catch(error => {
-            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error loading prompt data.</div>`;
+            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error loading prompt data: ${error.message}</div>`;
             console.error('Error loading prompt:', error);
         });
 });
@@ -903,12 +966,17 @@ document.getElementById('savePromptBtn').addEventListener('click', function() {
             },
             body: 'data=' + encodeURIComponent(data),
         })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
         .then(result => {
             document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-success">Prompt saved successfully!</div>`;
         })
         .catch(error => {
-            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error saving prompt.</div>`;
+            document.getElementById('promptFeedback').innerHTML = `<div class="alert alert-danger">Error saving prompt: ${error.message}</div>`;
             console.error('Error saving prompt:', error);
         });
     } else {
@@ -928,7 +996,12 @@ function fetchLogs() {
     logStatusText.textContent = 'Loading logs...';
 
     fetch('read_log.php')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
         .then(data => {
             logContent.textContent = data;
             logStatus.className = 'alert alert-success';
@@ -1015,7 +1088,12 @@ function loadWifiStatus() {
     document.getElementById('currentSsid').textContent = 'Checking...';
     document.getElementById('wifiStatus').className = 'alert alert-info';
     fetch('wifi_manager.php?action=status')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             document.getElementById('currentSsid').textContent = data.ssid || 'Not connected';
             document.getElementById('wifiStatus').className = 'alert alert-' + (data.ssid ? 'success' : 'warning');
@@ -1031,7 +1109,12 @@ function scanWifiNetworks() {
     const networkList = document.getElementById('wifiNetworks');
     networkList.innerHTML = '<li class="list-group-item">Scanning...</li>';
     fetch('wifi_manager.php?action=scan')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             networkList.innerHTML = '';
             if (data.networks && data.networks.length > 0) {
@@ -1093,7 +1176,12 @@ function connectWifi() {
         body: formData,
         signal: AbortSignal.timeout(30000)
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             connectBtn.disabled = false;
             connectBtn.textContent = 'Connect';
