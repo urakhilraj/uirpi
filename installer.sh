@@ -193,10 +193,9 @@ systemctl set-default graphical.target
 echo "Enabling and starting kiosk-browser service..."
 
 
-# Ensure .Xauthority exists for the user
-echo "Ensuring .Xauthority file for $USER..."
-sudo -u "$USER" touch "/home/$USER/.Xauthority"
-chown "$USER:$GROUP" "/home/$USER/.Xauthority"#!/bin/bash
+
+
+
 
 LINE='www-data ALL=(ALL) NOPASSWD: /bin/systemctl is-active kiosk-browser.service, /bin/systemctl reload kiosk-browser.service, /bin/systemctl start kiosk-browser.service, /bin/systemctl stop kiosk-browser.service, /bin/systemctl enable kiosk-browser.service, /bin/systemctl disable kiosk-browser.service'
 
