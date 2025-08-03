@@ -1,3 +1,123 @@
+<?php
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 'On');
+
+// Set headers before any output
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+// Check authentication
+require "backend/Config.php";
+$config = new Config;
+$config->load("local.config", "defaults.php");
+$auth = (isset($_SESSION["rpidbauth"])) ? true : false;
+if (!$auth) {
+    header("Location: index.php");
+    exit;
+}
+
+// Directory for storing posters and settings
+$poster_dir = "posters/";
+if (!is_dir($poster_dir)) {
+    mkdir($poster_dir, 0755, true);
+}
+$settings_file = $poster_dir . "poster_settings.json";
+
+// Load existing settings
+$settings = [];
+if (file_exists($settings_file)) {
+    $settings = json_decode(file_get_contents($settings_file), true) ?: [];
+}
+
+// List all media files
+$media_files = glob($poster_dir . "*.{jpg,jpeg,png,gif,mp4}", GLOB_BRACE);
+
+// Handle file upload
+$upload_message = "";
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_FILES["poster_file"])) {
+    $target_file = $poster_dir . basename($_FILES["poster_file"]["name"]);
+    $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $allowed_types = ['jpg', 'jpeg', 'png', 'gif', 'mp4'];
+
+    // Check if file is an image or video
+    $is_image = in_array($fileType, ['jpg', 'jpeg', 'png', 'gif']);
+    $is_video = $fileType === 'mp4';
+    $check = $is_image ? getimagesize($_FILES["poster_file"]["tmp_name"]) : true;
+
+    if ($check !== false || $is_video) {
+        // Verify resolution for images only
+        if ($is_image && ($check[0] != 1280 || $check[1] != 800)) {
+            $upload_message = '<div class="alert alert-danger">Image resolution must be exactly 1280x800 pixels.</div>';
+        } elseif (in_array($fileType, $allowed_types)) {
+            // Check file size (max 5MB)
+            if ($_FILES["poster_file"]["size"] <= 5000000) {
+                if (move_uploaded_file($_FILES["poster_file"]["tmp_name"], $target_file)) {
+                    $upload_message = '<div class="alert alert-success">File uploaded successfully!</div>';
+                    // Initialize settings for new file
+                    $filename = basename($_FILES["poster_file"]["name"]);
+                    $settings[$filename] = [
+                        'include_in_slider' => true,
+                        'order' => count($settings) + 1,
+                        'duration' => 5
+                    ];
+                    file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
+                } else {
+                    $upload_message = '<div class="alert alert-danger">Error uploading file.</div>';
+                }
+            } else {
+                $upload_message = '<div class="alert alert-danger">File is too large. Maximum size is 5MB.</div>';
+            }
+        } else {
+            $upload_message = '<div class="alert alert-danger">Only JPG, JPEG, PNG, GIF, and MP4 files are allowed.</div>';
+        }
+    } else {
+        $upload_message = '<div class="alert alert-danger">File is not a valid image or video.</div>';
+    }
+}
+
+// Handle poster deletion
+if (isset($_GET["delete"])) {
+    $file_to_delete = $poster_dir . basename($_GET["delete"]);
+    $filename = basename($_GET["delete"]);
+    if (file_exists($file_to_delete)) {
+        unlink($file_to_delete);
+        if (isset($settings[$filename])) {
+            unset($settings[$filename]);
+            file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
+        }
+        $upload_message = '<div class="alert alert-success">File deleted successfully!</div>';
+    } else {
+        $upload_message = '<div class="alert alert-danger">File not found.</div>';
+    }
+}
+
+// Handle slider settings update
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_settings"])) {
+    $new_settings = [];
+    if (!empty($media_files)) {
+        foreach ($media_files as $media) {
+            $filename = basename($media);
+            $new_settings[$filename] = [
+                'include_in_slider' => isset($_POST["include_in_slider"][$filename]) && $_POST["include_in_slider"][$filename] === 'on',
+                'order' => isset($_POST["order"][$filename]) ? (int)$_POST["order"][$filename] : 0,
+                'duration' => isset($_POST["duration"][$filename]) ? (float)$_POST["duration"][$filename] : 5
+            ];
+        }
+    }
+    $settings = $new_settings;
+    file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
+    $upload_message = '<div class="alert alert-success">Slider settings updated successfully!</div>';
+}
+
+// Check kiosk-browser.service status safely
+$service_status = shell_exec('sudo systemctl is-active kiosk-browser.service');
+$is_active = !empty($service_status) && trim($service_status) === 'active';
+
+// Get hostname safely
+$hostname = gethostname();
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -21,7 +141,7 @@
     <link rel="stylesheet" href="css/bootstrap-icons-1.11.1.css">
     <link rel="stylesheet" href="css/mdtoast.min.css?v=2.0.2">
 
-    <title><?php system("hostname"); ?> - Poster Manager</title>
+    <title><?php echo htmlspecialchars($hostname); ?> - Poster Manager</title>
 
     <style>
         .poster-list {
@@ -63,121 +183,67 @@
         .slider-settings input[type="number"] {
             width: 80px;
         }
+        .header-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        @media (max-width: 767px) {
+            .header-buttons {
+                justify-content: center;
+            }
+        }
+        .header-buttons .btn {
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+        }
+        .header-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .header-buttons .btn.disabled, .header-buttons .btn:disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .form-check.form-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-check-input {
+            width: 50px;
+            height: 25px;
+            cursor: pointer;
+        }
+        .form-check-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        .form-check-input:checked + .form-check-label {
+            color: #28a745;
+        }
+        .form-check-input:not(:checked) + .form-check-label {
+            color: #dc3545;
+        }
+        .btn-loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
-
-    <?php
-    session_start();
-    error_reporting(E_ALL);
-    ini_set('display_errors', 'On');
-
-    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Cache-Control: post-check=0, pre-check=0", false);
-    header("Pragma: no-cache");
-
-    require "backend/Config.php";
-    $config = new Config;
-    $config->load("local.config", "defaults.php");
-
-    // Check authentication
-    $auth = (isset($_SESSION["rpidbauth"])) ? true : false;
-    if (!$auth) {
-        header("Location: index.php");
-        exit;
-    }
-
-    // Directory for storing posters and settings
-    $poster_dir = "posters/";
-    if (!is_dir($poster_dir)) {
-        mkdir($poster_dir, 0755, true);
-    }
-    $settings_file = $poster_dir . "poster_settings.json";
-
-    // Load existing settings
-    $settings = [];
-    if (file_exists($settings_file)) {
-        $settings = json_decode(file_get_contents($settings_file), true) ?: [];
-    }
-
-    // List all media files
-    $media_files = glob($poster_dir . "*.{jpg,jpeg,png,gif,mp4}", GLOB_BRACE);
-
-    // Handle file upload
-    $upload_message = "";
-    if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_FILES["poster_file"])) {
-        $target_file = $poster_dir . basename($_FILES["poster_file"]["name"]);
-        $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-        $allowed_types = ['jpg', 'jpeg', 'png', 'gif', 'mp4'];
-
-        // Check if file is an image or video
-        $is_image = in_array($fileType, ['jpg', 'jpeg', 'png', 'gif']);
-        $is_video = $fileType === 'mp4';
-        $check = $is_image ? getimagesize($_FILES["poster_file"]["tmp_name"]) : true;
-
-        if ($check !== false || $is_video) {
-            // Verify resolution for images only
-            if ($is_image && ($check[0] != 1280 || $check[1] != 800)) {
-                $upload_message = '<div class="alert alert-danger">Image resolution must be exactly 1280x800 pixels.</div>';
-            } elseif (in_array($fileType, $allowed_types)) {
-                // Check file size (max 5MB)
-                if ($_FILES["poster_file"]["size"] <= 5000000) {
-                    if (move_uploaded_file($_FILES["poster_file"]["tmp_name"], $target_file)) {
-                        $upload_message = '<div class="alert alert-success">File uploaded successfully!</div>';
-                        // Initialize settings for new file
-                        $filename = basename($_FILES["poster_file"]["name"]);
-                        $settings[$filename] = [
-                            'include_in_slider' => true,
-                            'order' => count($settings) + 1,
-                            'duration' => 5
-                        ];
-                        file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
-                    } else {
-                        $upload_message = '<div class="alert alert-danger">Error uploading file.</div>';
-                    }
-                } else {
-                    $upload_message = '<div class="alert alert-danger">File is too large. Maximum size is 5MB.</div>';
-                }
-            } else {
-                $upload_message = '<div class="alert alert-danger">Only JPG, JPEG, PNG, GIF, and MP4 files are allowed.</div>';
-            }
-        } else {
-            $upload_message = '<div class="alert alert-danger">File is not a valid image or video.</div>';
-        }
-    }
-
-    // Handle poster deletion
-    if (isset($_GET["delete"])) {
-        $file_to_delete = $poster_dir . basename($_GET["delete"]);
-        $filename = basename($_GET["delete"]);
-        if (file_exists($file_to_delete)) {
-            unlink($file_to_delete);
-            if (isset($settings[$filename])) {
-                unset($settings[$filename]);
-                file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
-            }
-            $upload_message = '<div class="alert alert-success">File deleted successfully!</div>';
-        } else {
-            $upload_message = '<div class="alert alert-danger">File not found.</div>';
-        }
-    }
-
-    // Handle slider settings update
-    if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_settings"])) {
-        $new_settings = [];
-        if (!empty($media_files)) {
-            foreach ($media_files as $media) {
-                $filename = basename($media);
-                $new_settings[$filename] = [
-                    'include_in_slider' => isset($_POST["include_in_slider"][$filename]) && $_POST["include_in_slider"][$filename] === 'on',
-                    'order' => isset($_POST["order"][$filename]) ? (int)$_POST["order"][$filename] : 0,
-                    'duration' => isset($_POST["duration"][$filename]) ? (float)$_POST["duration"][$filename] : 5
-                ];
-            }
-        }
-        $settings = $new_settings;
-        file_put_contents($settings_file, json_encode($settings, JSON_PRETTY_PRINT));
-        $upload_message = '<div class="alert alert-success">Slider settings updated successfully!</div>';
-    }
-    ?>
 </head>
 <body>
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
@@ -227,20 +293,21 @@
     </svg>
 
     <div class="container">
-        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <header class="d-flex flex-wrap align-items-center justify-content-between py-3 mb-4 border-bottom">
             <div class="col-md-3 mb-2 mb-md-0">
                 <a href="index.php" class="d-inline-flex link-body-emphasis text-decoration-none" style="line-height: 32px;">
                     <img src="img/acubotzlogo.png" width="30" height="30" class="d-inline-block align-top me-1" alt="RPi Logo">
                     Acubotz Dashboard
                 </a>
             </div>
-            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-                <p style="line-height:15px;margin-bottom:0px"><b>Hostname:</b> <?php system("hostname"); ?> · <b>Internal IP:</b> <?php echo $_SERVER["SERVER_ADDR"]; ?><br>
-                    <b>Access from:</b> <?php echo $_SERVER["REMOTE_ADDR"]; ?> · <b>Port:</b> <?php echo $_SERVER['SERVER_PORT']; ?></p>
-            </ul>
-            <div class="col-md-3 text-end">
-                <button class="btn btn-outline-primary mb-2" onclick="window.location.href='index.php';"><i class="bi bi-arrow-left"></i> Back to Dashboard</button>
-                <button class="btn btn-outline-info mb-2" onclick="window.location.href='poster_slider.php';"><i class="bi bi-slideshow"></i> View Slider</button>
+            <div class="col-md-3 text-end header-buttons">
+                <button class="btn btn-primary btn-md mb-2" onclick="window.location.href='index.php';"><i class="bi bi-arrow-left"></i> Back to Dashboard</button>
+                <button class="btn btn-info btn-md mb-2" onclick="window.location.href='poster_slider.php';"><i class="bi bi-slideshow"></i> View Slider</button>
+                <button id="reloadButton" class="btn btn-warning btn-md mb-2" onclick="reloadService()"><i class="bi bi-arrow-clockwise"></i> Reload Service</button>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="serviceToggle" <?php echo $is_active ? 'checked' : ''; ?> onchange="toggleService()">
+                    <label class="form-check-label" for="serviceToggle"><?php echo $is_active ? 'Service On' : 'Service Off'; ?></label>
+                </div>
             </div>
         </header>
 
@@ -253,7 +320,7 @@
                         <form method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="poster_file" class="form-label">Select Image or Video (Images: 1280x800, JPG/PNG/GIF; Videos: MP4, Max 5MB)</label>
-                                <input type="file" class="form-control" id="poster_file" name="poster_file" accept="image/jpeg,image/png,image/gif,video/mp4" required>
+                            <input type="file" class="form-control" id="poster_file" name="poster_file" accept="image/jpeg,image/png,image/gif,video/mp4" required>
                             </div>
                             <button type="submit" class="btn btn-outline-success"><i class="bi bi-upload"></i> Upload</button>
                         </form>
@@ -367,6 +434,8 @@
     <script src="js/color-modes.js"></script>
 
     <script>
+        let isServiceRequestPending = false;
+
         function viewMedia(mediaPath, type) {
             const imageElement = document.getElementById('viewPosterImage');
             const videoElement = document.getElementById('viewPosterVideo');
@@ -421,6 +490,66 @@
             if (confirm(`Are you sure you want to delete ${filename}?`)) {
                 window.location.href = `poster_manager.php?delete=${encodeURIComponent(filename)}`;
             }
+        }
+
+        function reloadService() {
+            if (isServiceRequestPending) return;
+            isServiceRequestPending = true;
+            const reloadButton = document.getElementById('reloadButton');
+            reloadButton.classList.add('disabled', 'btn-loading');
+            fetch('service_control.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=reload'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mdtoast('Service reloaded successfully!', { type: 'success', duration: 3000 });
+                } else {
+                    mdtoast(`Failed to reload service: ${data.error}`, { type: 'error', duration: 5000 });
+                }
+            })
+            .catch(error => {
+                mdtoast(`Error: ${error.message}`, { type: 'error', duration: 5000 });
+            })
+            .finally(() => {
+                isServiceRequestPending = false;
+                reloadButton.classList.remove('disabled', 'btn-loading');
+            });
+        }
+
+        function toggleService() {
+            if (isServiceRequestPending) return;
+            isServiceRequestPending = true;
+            const toggle = document.getElementById('serviceToggle');
+            toggle.disabled = true;
+            const action = toggle.checked ? 'start' : 'stop';
+            fetch('service_control.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `action=${action}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toggle.nextElementSibling.textContent = toggle.checked ? 'Service On' : 'Service Off';
+                    mdtoast(`Service ${toggle.checked ? 'started' : 'stopped'} successfully!`, { type: 'success', duration: 3000 });
+                } else {
+                    toggle.checked = !toggle.checked; // Revert toggle on failure
+                    toggle.nextElementSibling.textContent = toggle.checked ? 'Service On' : 'Service Off';
+                    mdtoast(`Failed to ${action} service: ${data.error}`, { type: 'error', duration: 5000 });
+                }
+            })
+            .catch(error => {
+                toggle.checked = !toggle.checked; // Revert toggle on failure
+                toggle.nextElementSibling.textContent = toggle.checked ? 'Service On' : 'Service Off';
+                mdtoast(`Error: ${error.message}`, { type: 'error', duration: 5000 });
+            })
+            .finally(() => {
+                isServiceRequestPending = false;
+                toggle.disabled = false;
+            });
         }
     </script>
 </body>

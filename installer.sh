@@ -1,4 +1,6 @@
 #!/bin/bash
+sudo rm -rf /var/www/html/*
+sudo rm -rf /var/www/html/.* 2>/dev/null
 
 cecho () {
     declare -A colors;
@@ -189,13 +191,38 @@ systemctl set-default graphical.target
 
 # Enable and start the kiosk service
 echo "Enabling and starting kiosk-browser service..."
-systemctl enable kiosk-browser.service
-systemctl start kiosk-browser.service
+
 
 # Ensure .Xauthority exists for the user
 echo "Ensuring .Xauthority file for $USER..."
 sudo -u "$USER" touch "/home/$USER/.Xauthority"
-chown "$USER:$GROUP" "/home/$USER/.Xauthority"
+chown "$USER:$GROUP" "/home/$USER/.Xauthority"#!/bin/bash
+
+# Check if the file already contains the required line
+LINE='www-data ALL=(ALL) NOPASSWD: /bin/systemctl is-active kiosk-browser.service, /bin/systemctl reload kiosk-browser.service, /bin/systemctl start kiosk-browser.service, /bin/systemctl stop kiosk-browser.service, /bin/systemctl enable kiosk-browser.service, /bin/systemctl disable kiosk-browser.service'
+
+FILE='/etc/sudoers.d/www-data'
+
+if ! grep -Fxq "$LINE" "$FILE"; then
+  echo "$LINE" | sudo tee "$FILE" > /dev/null
+  echo "Line added to $FILE"
+else
+  echo "Line already exists in $FILE"
+fi
+
+sudo chmod 440 /etc/sudoers.d/www-data
+sudo chown root:root /etc/sudoers.d/www-data
+sudo visudo -c
+
+
+sudo chmod 664 /var/www/html/poster_manager.php
+sudo chown www-data:www-data /var/www/html/poster_manager.php
+sudo chmod 664 /var/www/html/service_control.php
+sudo chown www-data:www-data /var/www/html/service_control.php
+sudo chmod -R 775 /var/www/html/posters/
+sudo chown -R www-data:www-data /var/www/html/posters/
+sudo chmod 664 /var/www/html/posters/poster_settings.json
+sudo chown www-data:www-data /var/www/html/posters/poster_settings.json
 
 echo "Service installation complete! The poster slider should now run in full-screen kiosk mode on startup."
 echo "Access the slider at $DASHBOARD_URL"
