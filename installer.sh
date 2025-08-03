@@ -142,7 +142,7 @@ fi
 _success "Installation done! To access the RPi dashboard open a web browser and access URL: http://$hostn/ !"
 _process "Please report any issues here: https://github.com/urakhilraj/uirpi/issues. Thank you!"
 
-#!/bin/bash
+
 
 # Exit on any error
 set -e
