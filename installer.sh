@@ -198,22 +198,35 @@ echo "Ensuring .Xauthority file for $USER..."
 sudo -u "$USER" touch "/home/$USER/.Xauthority"
 chown "$USER:$GROUP" "/home/$USER/.Xauthority"#!/bin/bash
 
-# Check if the file already contains the required line
 LINE='www-data ALL=(ALL) NOPASSWD: /bin/systemctl is-active kiosk-browser.service, /bin/systemctl reload kiosk-browser.service, /bin/systemctl start kiosk-browser.service, /bin/systemctl stop kiosk-browser.service, /bin/systemctl enable kiosk-browser.service, /bin/systemctl disable kiosk-browser.service'
 
 FILE='/etc/sudoers.d/www-data'
 
+# Create the file if it does not exist
+if [ ! -f "$FILE" ]; then
+  echo "Creating $FILE..."
+  sudo touch "$FILE"
+fi
+
+# Add the line if it's not already present
 if ! grep -Fxq "$LINE" "$FILE"; then
-  echo "$LINE" | sudo tee "$FILE" > /dev/null
+  echo "$LINE" | sudo tee -a "$FILE" > /dev/null
   echo "Line added to $FILE"
 else
   echo "Line already exists in $FILE"
 fi
 
-sudo chmod 440 /etc/sudoers.d/www-data
-sudo chown root:root /etc/sudoers.d/www-data
-sudo visudo -c
+# Set correct permissions and ownership
+sudo chmod 440 "$FILE"
+sudo chown root:root "$FILE"
 
+# Validate sudoers syntax
+sudo visudo -cf "$FILE"
+if [ $? -eq 0 ]; then
+  echo "sudoers file is valid."
+else
+  echo "ERROR: sudoers file has syntax errors!"
+fi
 
 sudo chmod 664 /var/www/html/poster_manager.php
 sudo chown www-data:www-data /var/www/html/poster_manager.php
