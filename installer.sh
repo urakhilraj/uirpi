@@ -139,3 +139,68 @@ fi
 
 _success "Installation done! To access the RPi dashboard open a web browser and access URL: http://$hostn/ !"
 _process "Please report any issues here: https://github.com/urakhilraj/uirpi/issues. Thank you!"
+
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+# Define variables
+SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
+USER="acubotz"
+GROUP="acubotz"
+DASHBOARD_URL="http://acubotz.local/poster_slider.php"
+
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root. Please use sudo."
+    exit 1
+fi
+
+# Create systemd service file for kiosk mode
+echo "Creating systemd service file at $SERVICE_FILE..."
+cat > "$SERVICE_FILE" << EOL
+[Unit]
+Description=Start Chromium in kiosk mode to display poster slider
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/$USER/.Xauthority
+Type=simple
+ExecStart=/usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state $DASHBOARD_URL
+Restart=always
+RestartSec=10
+User=$USER
+Group=$GROUP
+WorkingDirectory=/home/$USER
+
+[Install]
+WantedBy=graphical.target
+EOL
+
+# Set permissions for service file
+chmod 644 "$SERVICE_FILE"
+
+# Ensure graphical target is default
+echo "Setting graphical target as default..."
+systemctl set-default graphical.target
+
+# Enable and start the kiosk service
+echo "Enabling and starting kiosk-browser service..."
+systemctl enable kiosk-browser.service
+systemctl start kiosk-browser.service
+
+# Ensure .Xauthority exists for the user
+echo "Ensuring .Xauthority file for $USER..."
+sudo -u "$USER" touch "/home/$USER/.Xauthority"
+chown "$USER:$GROUP" "/home/$USER/.Xauthority"
+
+echo "Service installation complete! The poster slider should now run in full-screen kiosk mode on startup."
+echo "Access the slider at $DASHBOARD_URL"
+echo "Reboot the system to verify the kiosk mode setup: sudo reboot"
+
+# Delete the installer script
+echo "Removing installer script ($0)..."
+rm -f "$0"
