@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
 
     switch ($action) {
         case 'reload':
-            $output = shell_exec("sudo systemctl reload $service 2>&1");
+            $output = shell_exec("sudo systemctl restart $service 2>&1");
             if ($output === null || strpos($output, 'Failed') !== false) {
                 $response['error'] = $output ?: 'Unknown error during reload';
             } else {

@@ -142,7 +142,10 @@ fi
 _success "Installation done! To access the RPi dashboard open a web browser and access URL: http://$hostn/ !"
 _process "Please report any issues here: https://github.com/urakhilraj/uirpi/issues. Thank you!"
 
-
+sudo mv /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash_default.png
+sudo cp /var/www/html/splash.png /usr/share/plymouth/themes/pix
+sudo plymouth-set-default-theme --rebuild-initrd pix
+pcmanfm --set-wallpaper /var/www/html/wallpaper.jpg
 
 # Exit on any error
 set -e
