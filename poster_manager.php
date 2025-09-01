@@ -306,7 +306,7 @@ $hostname = gethostname();
                 <button id="reloadButton" class="btn btn-warning btn-md mb-2" onclick="reloadService()"><i class="bi bi-arrow-clockwise"></i> Reload Service</button>
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="serviceToggle" <?php echo $is_active ? 'checked' : ''; ?> onchange="toggleService()">
-                    <label class="form-check-label" for="serviceToggle"><?php echo $is_active ? 'Service On' : 'Service Off'; ?></label>
+                    <label class="form-check-label" for="serviceToggle"><?php echo $is_active ? 'Auto mode' : 'Manual mode'; ?></label>
                 </div>
             </div>
         </header>
