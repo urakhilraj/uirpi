@@ -152,9 +152,9 @@ set -e
 
 # Define variables
 SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
-USER="acubotz"
-GROUP="acubotz"
-HOME_DIR="/home/$USER"
+USER="acubot"
+GROUP="acubot"
+HOME_DIR="/var/www/html"
 WRAPPER_SCRIPT="$HOME_DIR/start_kiosk_voice.sh"
 ENV_DIR="$HOME_DIR/env"
 DASHBOARD_URL="http://acubotz.local/poster_slider.php"
