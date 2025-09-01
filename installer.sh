@@ -154,6 +154,9 @@ set -e
 SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
 USER="acubotz"
 GROUP="acubotz"
+HOME_DIR="/home/$USER"
+WRAPPER_SCRIPT="$HOME_DIR/start_kiosk_voice.sh"
+ENV_DIR="$HOME_DIR/env"
 DASHBOARD_URL="http://acubotz.local/poster_slider.php"
 
 # Check if running as root
@@ -162,32 +165,71 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Create systemd service file for kiosk mode
-echo "Creating systemd service file at $SERVICE_FILE..."
+echo "=== Installing system dependencies ==="
+apt-get update
+apt-get install -y python3 python3-venv python3-pip \
+                   portaudio19-dev python3-pyaudio \
+                   libasound-dev libpulse-dev \
+                   chromium-browser
+
+echo "=== Creating Python virtual environment at $ENV_DIR ==="
+sudo -u $USER python3 -m venv "$ENV_DIR"
+
+echo "=== Installing required Python packages (pyaudio, websocket-client) ==="
+sudo -u $USER $ENV_DIR/bin/pip install --upgrade pip
+sudo -u $USER $ENV_DIR/bin/pip install pyaudio websocket-client
+
+echo "=== Creating wrapper script at $WRAPPER_SCRIPT ==="
+cat > "$WRAPPER_SCRIPT" << EOL
+#!/bin/bash
+
+# Start Chromium in kiosk mode
+/usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars \
+--disable-session-crashed-bubble --disable-restore-session-state \
+$DASHBOARD_URL &
+
+# Start Voice Assistant Bot
+$ENV_DIR/bin/python $HOME_DIR/voice.py
+EOL
+
+chmod +x "$WRAPPER_SCRIPT"
+chown $USER:$GROUP "$WRAPPER_SCRIPT"
+
+echo "=== Creating systemd service file at $SERVICE_FILE ==="
 cat > "$SERVICE_FILE" << EOL
 [Unit]
-Description=Start Chromium in kiosk mode to display poster slider
-After=graphical.target
-Wants=graphical.target
+Description=Kiosk Browser + Voice Assistant Bot
+After=graphical.target sound.target network.target
+Wants=graphical.target sound.target network.target
 
 [Service]
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/$USER/.Xauthority
 Type=simple
-ExecStart=/usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state $DASHBOARD_URL
-Restart=always
-RestartSec=10
 User=$USER
 Group=$GROUP
-WorkingDirectory=/home/$USER
+WorkingDirectory=$HOME_DIR
+Environment="VIRTUAL_ENV=$ENV_DIR"
+Environment="PATH=$ENV_DIR/bin:/usr/bin"
+Environment="PULSE_SERVER=unix:/run/user/1000/pulse/native"
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=$HOME_DIR/.Xauthority
+
+ExecStart=$WRAPPER_SCRIPT
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=graphical.target
 EOL
 
-# Set permissions for service file
 chmod 644 "$SERVICE_FILE"
 
+echo "=== Reloading systemd and enabling service ==="
+systemctl daemon-reload
+systemctl enable kiosk-browser.service
+systemctl start kiosk-browser.service
+
+echo "=== Installation complete! ==="
+echo "Check status with: systemctl status kiosk-browser.service"
 # Ensure graphical target is default
 echo "Setting graphical target as default..."
 systemctl set-default graphical.target
