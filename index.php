@@ -205,7 +205,7 @@ if ($auth) {
             <button class="btn btn-outline-primary mb-2" style="margin-bottom: 1px!important;" onclick="$('#wifiModal').modal('show');"><i class="bi bi-wifi"></i> WiFi</button>
             <button class="btn btn-outline-info mb-2" style="margin-bottom: 1px!important;" onclick="$('#promptModal').modal('show');"><i class="bi bi-pencil-square"></i> Prompt</button>
             <button class="btn btn-outline-custom mb-2" style="margin-bottom: 1px!important;" onclick="$('#logModal').modal('show');"><i class="bi bi-file-text"></i> Logs</button>
-            <button class="btn btn-outline-success mb-2" style="margin-bottom: 1px!important;" onclick="window.location.href='poster_manager.php';"><i class="bi bi-image"></i> Create Poster</button>
+            <button class="btn btn-outline-success mb-2" style="margin-bottom: 1px!important;" onclick="window.location.href='poster_manager.php';"><i class="bi bi-image"></i> customization</button>
         </div>
     </header>
 </div>
