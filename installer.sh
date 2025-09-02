@@ -151,7 +151,7 @@ pcmanfm --set-wallpaper /var/www/html/wallpaper.jpg
 set -e
 
 # Define variables
-SERVICE_FILE="/etc/systemd/system/kiosk-voice.service"
+SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
 USER_BROWSER="acubot"
 USER_VOICE="acubotz"
 HOME_BROWSER="/home/$USER_BROWSER"
@@ -226,11 +226,11 @@ chmod 644 "$SERVICE_FILE"
 
 echo "=== Reloading systemd and enabling service ==="
 systemctl daemon-reload
-systemctl enable kiosk-voice.service
-systemctl start kiosk-voice.service
+systemctl enable kiosk-browser.service
+systemctl start kiosk-browser.service
 
 echo "=== Installation complete! ==="
-echo "Check status with: systemctl status kiosk-voice.service"
+echo "Check status with: systemctl status kiosk-browser.service"
 
 
 
