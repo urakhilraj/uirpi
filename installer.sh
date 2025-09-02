@@ -151,12 +151,13 @@ pcmanfm --set-wallpaper /var/www/html/wallpaper.jpg
 set -e
 
 # Define variables
-SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
-USER="acubot"
-GROUP="acubot"
-HOME_DIR="/home/$USER"
-WRAPPER_SCRIPT="$HOME_DIR/start_kiosk_voice.sh"
-ENV_DIR="$HOME_DIR/env"
+SERVICE_FILE="/etc/systemd/system/kiosk-voice.service"
+USER_BROWSER="acubot"
+USER_VOICE="acubotz"
+HOME_BROWSER="/home/$USER_BROWSER"
+HOME_VOICE="/home/$USER_VOICE"
+ENV_DIR="$HOME_VOICE/env"
+WRAPPER_SCRIPT="$HOME_VOICE/start_kiosk_voice.sh"
 DASHBOARD_URL="http://acubotz.local/poster_slider.php"
 
 # Check if running as root
@@ -172,46 +173,46 @@ apt-get install -y python3 python3-venv python3-pip \
                    libasound-dev libpulse-dev \
                    chromium-browser
 
-echo "=== Creating Python virtual environment at $ENV_DIR ==="
-sudo -u $USER python3 -m venv "$ENV_DIR"
+echo "=== Creating Python virtual environment for $USER_VOICE at $ENV_DIR ==="
+sudo -u $USER_VOICE python3 -m venv "$ENV_DIR"
 
 echo "=== Installing required Python packages (pyaudio, websocket-client) ==="
-sudo -u $USER $ENV_DIR/bin/pip install --upgrade pip
-sudo -u $USER $ENV_DIR/bin/pip install pyaudio websocket-client
+sudo -u $USER_VOICE $ENV_DIR/bin/pip install --upgrade pip
+sudo -u $USER_VOICE $ENV_DIR/bin/pip install pyaudio websocket-client
 
 echo "=== Creating wrapper script at $WRAPPER_SCRIPT ==="
 cat > "$WRAPPER_SCRIPT" << EOL
 #!/bin/bash
 
-# Start Chromium in kiosk mode
-/usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars \
+# Run Chromium in kiosk mode as $USER_BROWSER
+sudo -u $USER_BROWSER /usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars \
 --disable-session-crashed-bubble --disable-restore-session-state \
 $DASHBOARD_URL &
 
-# Start Voice Assistant Bot
-$ENV_DIR/bin/python $HOME_DIR/voice.py
+# Run Voice Assistant Bot as $USER_VOICE
+sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
 EOL
 
 chmod +x "$WRAPPER_SCRIPT"
-chown $USER:$GROUP "$WRAPPER_SCRIPT"
+chown $USER_VOICE:$USER_VOICE "$WRAPPER_SCRIPT"
 
 echo "=== Creating systemd service file at $SERVICE_FILE ==="
 cat > "$SERVICE_FILE" << EOL
 [Unit]
-Description=Kiosk Browser + Voice Assistant Bot
+Description=Kiosk Browser (acubot) + Voice Assistant (acubotz)
 After=graphical.target sound.target network.target
 Wants=graphical.target sound.target network.target
 
 [Service]
 Type=simple
-User=$USER
-Group=$GROUP
-WorkingDirectory=$HOME_DIR
+User=root
+Group=root
+WorkingDirectory=$HOME_VOICE
 Environment="VIRTUAL_ENV=$ENV_DIR"
 Environment="PATH=$ENV_DIR/bin:/usr/bin"
-Environment="PULSE_SERVER=unix:/run/user/1000/pulse/native"
+Environment="PULSE_SERVER=unix:/run/user/1001/pulse/native"
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=$HOME_DIR/.Xauthority
+Environment=XAUTHORITY=$HOME_BROWSER/.Xauthority
 
 ExecStart=$WRAPPER_SCRIPT
 Restart=always
@@ -225,17 +226,12 @@ chmod 644 "$SERVICE_FILE"
 
 echo "=== Reloading systemd and enabling service ==="
 systemctl daemon-reload
-systemctl enable kiosk-browser.service
-systemctl start kiosk-browser.service
+systemctl enable kiosk-voice.service
+systemctl start kiosk-voice.service
 
 echo "=== Installation complete! ==="
-echo "Check status with: systemctl status kiosk-browser.service"
-# Ensure graphical target is default
-echo "Setting graphical target as default..."
-systemctl set-default graphical.target
+echo "Check status with: systemctl status kiosk-voice.service"
 
-# Enable and start the kiosk service
-echo "Enabling and starting kiosk-browser service..."
 
 
 
