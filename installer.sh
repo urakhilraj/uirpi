@@ -190,7 +190,7 @@ sudo -u $USER_BROWSER /usr/bin/chromium-browser --noerrdialogs --kiosk --disable
 $DASHBOARD_URL &
 
 # Run Voice Assistant Bot as $USER_VOICE
-sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
+#sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
 EOL
 
 chmod +x "$WRAPPER_SCRIPT"
