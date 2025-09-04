@@ -264,6 +264,13 @@ else
   echo "ERROR: sudoers file has syntax errors!"
 fi
 
+sudo touch /var/www/html/api_key.txt
+sudo usermod -aG www-data acubotz
+sudo usermod -aG www-data www-data
+sudo chown acubotz:www-data /var/www/html/api_key.txt
+sudo chmod 770 /var/www/html/api_key.txt
+
+
 sudo chmod 664 /var/www/html/poster_manager.php
 sudo chown www-data:www-data /var/www/html/poster_manager.php
 sudo chmod 664 /var/www/html/service_control.php
