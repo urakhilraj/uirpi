@@ -543,7 +543,7 @@ if ($auth) {
             <div class="modal-body">
                 <form id="promptForm">
                     <div class="mb-3">
-                        <label for="promptInput" class="form-label"> Prompt Content </label>
+                        <label for="promptInput" class="form-label rows="6" "> Prompt Content </label>
                         <textarea id="promptInput" class="form-control"  placeholder="Enter or edit prompt content..."></textarea>
                         <small class="form-text text-muted"></small>
                     </div>
