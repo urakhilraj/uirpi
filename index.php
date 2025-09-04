@@ -543,9 +543,9 @@ if ($auth) {
             <div class="modal-body">
                 <form id="promptForm">
                     <div class="mb-3">
-                        <label for="promptInput" class="form-label">Prompt Content (up to 500 words)</label>
-                        <textarea id="promptInput" class="form-control" rows="6" maxlength="500" placeholder="Enter or edit prompt content..."></textarea>
-                        <small class="form-text text-muted">This content will be saved as acubotzPrompt.txt</small>
+                        <label for="promptInput" class="form-label"> Prompt Content </label>
+                        <textarea id="promptInput" class="form-control"  placeholder="Enter or edit prompt content..."></textarea>
+                        <small class="form-text text-muted"></small>
                     </div>
                     <div id="promptFeedback"></div>
                 </form>
