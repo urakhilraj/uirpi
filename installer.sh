@@ -97,7 +97,7 @@ sudo apt-get update
 sudo apt-get install -y software-properties-common
 sudo apt-add-repository ppa:ondrej/php -y
 sudo apt-get update
-sudo apt-get install -y php8.1-cli php8.1-fpm libapache2-mod-php
+sudo apt-get install -y php8.1-cli php8.1-fpm libapache2-mod-php php-curl
 if [ $? -ne 0 ]; then
     echo "${RED}Failed to install PHP 8.1. Please check your internet connection and try again.${RESET}"
     exit 1
@@ -150,7 +150,7 @@ pcmanfm --set-wallpaper /var/www/html/wallpaper.jpg
 # Exit on any error
 set -e
 
-# Define variables
+# Variables
 SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
 USER_BROWSER="acubot"
 USER_VOICE="acubotz"
@@ -160,7 +160,7 @@ ENV_DIR="$HOME_VOICE/env"
 WRAPPER_SCRIPT="$HOME_VOICE/start_kiosk_voice.sh"
 DASHBOARD_URL="http://acubotz.local/poster_slider.php"
 
-# Check if running as root
+# Check root
 if [ "$EUID" -ne 0 ]; then
     echo "This script must be run as root. Please use sudo."
     exit 1
@@ -176,7 +176,7 @@ apt-get install -y python3 python3-venv python3-pip \
 echo "=== Creating Python virtual environment for $USER_VOICE at $ENV_DIR ==="
 sudo -u $USER_VOICE python3 -m venv "$ENV_DIR"
 
-echo "=== Installing required Python packages (pyaudio, websocket-client) ==="
+echo "=== Installing required Python packages ==="
 sudo -u $USER_VOICE $ENV_DIR/bin/pip install --upgrade pip
 sudo -u $USER_VOICE $ENV_DIR/bin/pip install pyaudio websocket-client
 
@@ -185,12 +185,16 @@ cat > "$WRAPPER_SCRIPT" << EOL
 #!/bin/bash
 
 # Run Chromium in kiosk mode as $USER_BROWSER
-sudo -u $USER_BROWSER /usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars \
---disable-session-crashed-bubble --disable-restore-session-state \
-$DASHBOARD_URL &
+sudo -u $USER_BROWSER env DISPLAY=:0 XAUTHORITY=$HOME_BROWSER/.Xauthority \\
+    /usr/bin/chromium-browser --noerrdialogs --kiosk --disable-infobars \\
+    --disable-session-crashed-bubble --disable-restore-session-state \\
+    $DASHBOARD_URL &
 
-# Run Voice Assistant Bot as $USER_VOICE
-sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
+# Run Voice Assistant Bot as $USER_VOICE with correct env
+sudo -u $USER_VOICE env \\
+    XDG_RUNTIME_DIR=/run/user/\$(id -u $USER_VOICE) \\
+    PULSE_SERVER=unix:/run/user/\$(id -u $USER_VOICE)/pulse/native \\
+    $ENV_DIR/bin/python /var/www/html/voice.py
 EOL
 
 chmod +x "$WRAPPER_SCRIPT"
@@ -208,13 +212,7 @@ Type=simple
 User=root
 Group=root
 WorkingDirectory=$HOME_VOICE
-Environment="VIRTUAL_ENV=$ENV_DIR"
-Environment="PATH=$ENV_DIR/bin:/usr/bin"
-Environment="PULSE_SERVER=unix:/run/user/1001/pulse/native"
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=$HOME_BROWSER/.Xauthority
 ExecStartPre=/bin/sleep 5
-
 ExecStart=$WRAPPER_SCRIPT
 Restart=always
 RestartSec=10
@@ -228,13 +226,10 @@ chmod 644 "$SERVICE_FILE"
 echo "=== Reloading systemd and enabling service ==="
 systemctl daemon-reload
 systemctl enable kiosk-browser.service
-systemctl start kiosk-browser.service
+systemctl restart kiosk-browser.service
 
 echo "=== Installation complete! ==="
 echo "Check status with: systemctl status kiosk-browser.service"
-
-
-
 
 
 
