@@ -190,7 +190,7 @@ sudo -u $USER_BROWSER /usr/bin/chromium-browser --noerrdialogs --kiosk --disable
 $DASHBOARD_URL &
 
 # Run Voice Assistant Bot as $USER_VOICE
-#sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
+sudo -u $USER_VOICE $ENV_DIR/bin/python /var/www/html/voice.py
 EOL
 
 chmod +x "$WRAPPER_SCRIPT"
@@ -213,6 +213,7 @@ Environment="PATH=$ENV_DIR/bin:/usr/bin"
 Environment="PULSE_SERVER=unix:/run/user/1001/pulse/native"
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=$HOME_BROWSER/.Xauthority
+ExecStartPre=/bin/sleep 5
 
 ExecStart=$WRAPPER_SCRIPT
 Restart=always
