@@ -290,43 +290,46 @@ def main():
             p.terminate()
             raise ValueError('No default input device available.')
 
-    # Check supported sample rates
+    # Check supported sample rates for microphone
     supported_rates = check_supported_sample_rates(p, input_device_index)
     logging.info(f'Supported sample rates for input device: {supported_rates}')
 
-    selected_rate = RATE
+    mic_rate = RATE
     if supported_rates:
         if RATE not in supported_rates:
-            logging.warning(f'Desired sample rate {RATE} not supported. Trying fallback rates.')
+            logging.warning(f'Desired mic sample rate {RATE} not supported. Trying fallback rates.')
             for fallback_rate in FALLBACK_RATES:
                 if fallback_rate in supported_rates:
-                    selected_rate = fallback_rate
-                    logging.info(f'Using fallback sample rate: {selected_rate}')
+                    mic_rate = fallback_rate
+                    logging.info(f'Using fallback mic sample rate: {mic_rate}')
                     break
             else:
-                logging.warning(f'No supported sample rates found in {FALLBACK_RATES}. Attempting 44100 Hz.')
-                selected_rate = 44100
+                logging.warning(f'No supported sample rates found in {FALLBACK_RATES}. Forcing 44100 Hz.')
+                mic_rate = 44100
     else:
-        logging.warning(f'No supported sample rates detected. Attempting 44100 Hz.')
-        selected_rate = 44100
+        logging.warning(f'No supported sample rates detected. Forcing 44100 Hz.')
+        mic_rate = 44100
+
+    # Speaker must always be 24000 Hz (OpenAI audio is 24kHz PCM16)
+    spkr_rate = 24000
 
     try:
-        logging.info(f'Opening microphone stream with sample rate: {selected_rate} Hz, device index: {input_device_index}')
+        logging.info(f'Opening microphone stream with sample rate: {mic_rate} Hz, device index: {input_device_index}')
         mic_stream = p.open(
             format=FORMAT,
             channels=1,
-            rate=selected_rate,
+            rate=mic_rate,
             input=True,
             input_device_index=input_device_index,
             stream_callback=mic_callback,
             frames_per_buffer=CHUNK_SIZE
         )
 
-        logging.info(f'Opening speaker stream with sample rate: {selected_rate} Hz')
+        logging.info(f'Opening speaker stream with sample rate: {spkr_rate} Hz')
         spkr_stream = p.open(
             format=FORMAT,
             channels=1,
-            rate=selected_rate,
+            rate=spkr_rate,
             output=True,
             stream_callback=spkr_callback,
             frames_per_buffer=CHUNK_SIZE
@@ -352,14 +355,15 @@ def main():
             spkr_stream.close()
 
     except OSError as e:
-        logging.error(f'Failed to open audio streams with sample rate {selected_rate} Hz: {e}')
-        raise ValueError(f'Invalid sample rate {selected_rate} Hz for device index {input_device_index}. Run diagnostic script to check supported rates.')
+        logging.error(f'Failed to open audio streams (mic={mic_rate}, spkr={spkr_rate}): {e}')
+        raise
     except Exception as e:
         logging.error(f'Error opening audio streams: {e}')
         raise
     finally:
         p.terminate()
         logging.info('Audio streams stopped and resources released. Exiting.')
+
 
 if __name__ == '__main__':
     main()
