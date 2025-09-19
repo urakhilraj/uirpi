@@ -60,7 +60,7 @@ def read_system_prompt(file_path='/var/www/html/acubotzPrompt.txt'):
         # Check file permissions
         if not os.access(file_path, os.R_OK):
             logging.warning(f'Cannot read {file_path}: Permission denied or file does not exist. Using fallback prompt.')
-            return 'You are a helpful assistant named Janu with a friendly and concise tone. Introduce yourself as Janu when responding, and provide accurate and brief answers to user queries,   always aiming to be supportive and engaging.Generate all responses in English, Kazakh, and Malayalam only, with English as the default language. Do not use any other languages under any circumstances. If the user explicitly requests a language change using phrases like "switch to Kazakh" or "speak in Malayalam," then switch the response language accordingly. Otherwise, continue responding in English by default.'
+            return 'You are a helpful assistant named Janu with a friendly and concise tone. Introduce yourself as Janu when responding, and provide accurate and brief answers to user queries, always aiming to be supportive and engaging.Generate all responses in English, Kazakh, and Malayalam only, with English as the default language. Do not use any other languages under any circumstances. If the user explicitly requests a language change using phrases like "switch to Kazakh" or "speak in Malayalam," then switch the response language accordingly. Otherwise, continue responding in English by default.'
         file_stat = os.stat(file_path)
         logging.info(f'File permissions for {file_path}: {oct(file_stat.st_mode & 0o777)}')
         
@@ -195,6 +195,23 @@ def receive_audio_from_websocket(ws):
                 elif event_type == 'response.audio.done':
                     logging.info('?? AI finished speaking.')
 
+                elif event_type == 'response.text.delta':
+                    text_delta = message.get('delta', '')
+                    print(text_delta, end='', flush=True)
+                    logging.info(f'?? Text delta: {text_delta}')
+
+                elif event_type == 'response.text.done':
+                    print()
+                    logging.info('?? Text done.')
+
+                elif event_type == 'conversation.item.input_audio_transcription.completed':
+                    transcript = message.get('transcript', '')
+                    print(f"You said: {transcript}")
+                    logging.info(f'?? Transcript: {transcript}')
+
+                elif event_type == 'error':
+                    logging.error(f'?? Error: {message.get("error")}')
+
             except WebSocketConnectionClosedException:
                 logging.error('WebSocket connection closed.')
                 break
@@ -217,13 +234,44 @@ def connect_to_openai():
         # Load system prompt from file
         system_prompt = read_system_prompt()
 
-        ws.send(json.dumps({
-            'type': 'response.create',
-            'response': {
-                'modalities': ['audio', 'text'],
-                'instructions': system_prompt
+        # Update session with instructions and config
+        session_config = {
+            "type": "session.update",
+            "session": {
+                "modalities": ["text", "audio"],
+                "instructions": system_prompt,
+                "voice": "alloy",
+                "input_audio_format": "pcm16",
+                "output_audio_format": "pcm16",
+                "input_audio_transcription": {
+                    "model": "whisper-1"
+                },
+                "turn_detection": {
+                    "type": "server_vad",
+                    "threshold": 0.5,
+                    "prefix_padding_ms": 300,
+                    "silence_duration_ms": 200
+                },
+                "temperature": 0.8,
+                "max_response_output_tokens": 4096
             }
-        }))
+        }
+        ws.send(json.dumps(session_config))
+        logging.info('Session updated with custom prompt and config.')
+
+        # Send a welcome message to trigger introduction
+        welcome_event = {
+            "type": "conversation.item.create",
+            "item": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Hello, introduce yourself briefly."}]
+            }
+        }
+        ws.send(json.dumps(welcome_event))
+
+        # Trigger response creation for welcome
+        ws.send(json.dumps({"type": "response.create"}))
 
         # Start the recv and send threads
         receive_thread = threading.Thread(target=receive_audio_from_websocket, args=(ws,))
