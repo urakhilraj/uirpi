@@ -57,10 +57,10 @@ CYAN="$ESC[36m" WHITE="${ESC}[37m" DEFAULT="${ESC}[39m"
 cyanprint() { printf "${CYAN}%s${RESET}\n" "$1"; }
 _process() {
   echo -e "\n"
-  cyanprint " → $@"
+  cyanprint " â†’ $@"
 }
 _success() {
-  printf "\n%s✓ Success:%s\n" "$(tput setaf 2)" "$(tput sgr0) $1"
+  printf "\n%sâœ“ Success:%s\n" "$(tput setaf 2)" "$(tput sgr0) $1"
 }
 
 cecho -c 'blue' "***************************************"
@@ -153,7 +153,7 @@ set -e
 # Variables
 SERVICE_FILE="/etc/systemd/system/kiosk-browser.service"
 USER_BROWSER="acubot"
-USER_VOICE="acubotz"
+USER_VOICE="acubot"
 HOME_BROWSER="/home/$USER_BROWSER"
 HOME_VOICE="/home/$USER_VOICE"
 ENV_DIR="$HOME_VOICE/env"
@@ -203,7 +203,7 @@ chown $USER_VOICE:$USER_VOICE "$WRAPPER_SCRIPT"
 echo "=== Creating systemd service file at $SERVICE_FILE ==="
 cat > "$SERVICE_FILE" << EOL
 [Unit]
-Description=Kiosk Browser (acubot) + Voice Assistant (acubotz)
+Description=Kiosk Browser (acubot) + Voice Assistant (acubot)
 After=graphical.target sound.target network.target
 Wants=graphical.target sound.target network.target
 
@@ -265,9 +265,9 @@ else
 fi
 
 sudo touch /var/www/html/api_key.txt
-sudo usermod -aG www-data acubotz
+sudo usermod -aG www-data acubot
 sudo usermod -aG www-data www-data
-sudo chown acubotz:www-data /var/www/html/api_key.txt
+sudo chown acubot:www-data /var/www/html/api_key.txt
 sudo chmod 770 /var/www/html/api_key.txt
 
 
