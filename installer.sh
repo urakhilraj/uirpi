@@ -1,6 +1,9 @@
 #!/bin/bash
 sudo rm -rf /var/www/html/*
 sudo rm -rf /var/www/html/.* 2>/dev/null
+sudo usermod -aG sudo acubot
+sudo usermod -aG adm,dialout,cdrom,audio,video,plugdev,users,input,netdev acubotz
+
 
 cecho () {
     declare -A colors;
