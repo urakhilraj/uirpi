@@ -70,6 +70,12 @@ cecho -c 'blue' "***************************************"
 cecho -c 'blue' "Welcome to the RPi Dashboard installer!"
 cecho -c 'blue' "***************************************"
 
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get update -y
+sudo apt-get install arduino -y 
+
+
 _process "Checking and installing required dependencies..."
 if ! command -v git >/dev/null; then
     _process "Installing Git..."
@@ -279,9 +285,9 @@ sudo chown www-data:www-data /var/www/html/poster_manager.php
 sudo chmod 664 /var/www/html/service_control.php
 sudo chown www-data:www-data /var/www/html/service_control.php
 sudo chmod -R 775 /var/www/html/posters/
-sudo chown -R www-data:www-data /var/www/html/posters/
-sudo chmod 664 /var/www/html/posters/poster_settings.json
-sudo chown www-data:www-data /var/www/html/posters/poster_settings.json
+# sudo chown -R www-data:www-data /var/www/html/posters/
+# sudo chmod 664 /var/www/html/posters/poster_settings.json
+# sudo chown www-data:www-data /var/www/html/posters/poster_settings.json
 
 echo "Service installation complete! The poster slider should now run in full-screen kiosk mode on startup."
 echo "Access the slider at $DASHBOARD_URL"
@@ -290,3 +296,4 @@ echo "Reboot the system to verify the kiosk mode setup: sudo reboot"
 # Delete the installer script
 echo "Removing installer script ($0)..."
 rm -f "$0"
+sudo reboot
