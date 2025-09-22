@@ -284,7 +284,7 @@ sudo chmod 664 /var/www/html/poster_manager.php
 sudo chown www-data:www-data /var/www/html/poster_manager.php
 sudo chmod 664 /var/www/html/service_control.php
 sudo chown www-data:www-data /var/www/html/service_control.php
-sudo chmod -R 775 /var/www/html/posters/
+# sudo chmod -R 775 /var/www/html/posters/
 # sudo chown -R www-data:www-data /var/www/html/posters/
 # sudo chmod 664 /var/www/html/posters/poster_settings.json
 # sudo chown www-data:www-data /var/www/html/posters/poster_settings.json
