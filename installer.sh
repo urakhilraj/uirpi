@@ -71,7 +71,6 @@ cecho -c 'blue' "Welcome to the RPi Dashboard installer!"
 cecho -c 'blue' "***************************************"
 
 sudo apt-get update -y
-sudo apt-get upgrade -y
 sudo apt-get update -y
 sudo apt-get install arduino -y 
 
